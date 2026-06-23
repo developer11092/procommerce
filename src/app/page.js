@@ -136,6 +136,25 @@ export default function Home() {
     }
   };
 
+  // Plan info shown under the calculator plan selector
+  const planInfo = {
+    free: { title: "Square Free", desc: "Best for businesses that need basic Square POS tools without a monthly software charge. Processing fees still apply." },
+    plus: { title: "Square Plus", desc: "Advanced inventory, staff tools, and unlocked KDS / Kiosk app add-ons for active, scaling businesses." },
+    premium: { title: "Square Premium", desc: "For high-volume merchants over $250k/year. Lower negotiated rates, API integrations, and a dedicated account manager." }
+  };
+
+  // Trust marquee strip items
+  const trustItems = [
+    "Authorized Square Reseller",
+    "Credit Card Processing",
+    "POS Consultation",
+    "Statement Reviews",
+    "ATM Placements",
+    "Hardware Setup",
+    "No Long-Term Contracts",
+    "1-on-1 Onboarding"
+  ];
+
   // --- HASH ROUTER EFFECT ---
   useEffect(() => {
     const handleHash = () => {
@@ -181,23 +200,86 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // --- SCROLL ANIMATIONS OBSERVER ---
+  // --- SCROLL ANIMATIONS / COUNT-UP / PARALLAX ---
   useEffect(() => {
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Directional scroll reveals
     const scrollElements = document.querySelectorAll(".animate-on-scroll");
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
-        }
+    let observer = null;
+    if (reduce) {
+      scrollElements.forEach(el => el.classList.add("visible"));
+    } else {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08, rootMargin: "0px 0px -8% 0px" });
+      scrollElements.forEach(el => observer.observe(el));
+    }
+
+    // Animated count-up numbers
+    const counters = document.querySelectorAll("[data-count]");
+    const countUp = (el) => {
+      const target = Number(el.dataset.count) || 0;
+      const prefix = el.dataset.prefix || "";
+      const suffix = el.dataset.suffix || "";
+      const dur = 1300;
+      const start = performance.now();
+      const tick = (now) => {
+        const t = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = prefix + Math.round(target * eased).toLocaleString("en-US") + suffix;
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    let countObserver = null;
+    if (reduce) {
+      counters.forEach(el => {
+        el.textContent = (el.dataset.prefix || "") + Number(el.dataset.count).toLocaleString("en-US") + (el.dataset.suffix || "");
       });
-    }, {
-      threshold: 0.05,
-      rootMargin: "0px 0px -40px 0px"
-    });
-    
-    scrollElements.forEach(el => observer.observe(el));
-    return () => observer.disconnect();
+    } else {
+      countObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { countUp(e.target); countObserver.unobserve(e.target); }
+        });
+      }, { threshold: 0.6 });
+      counters.forEach(el => countObserver.observe(el));
+    }
+
+    // Parallax drift on tagged elements
+    let onScroll = null;
+    if (!reduce) {
+      const pels = Array.from(document.querySelectorAll("[data-parallax]"));
+      let ticking = false;
+      onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          const vh = window.innerHeight;
+          pels.forEach(el => {
+            const r = el.getBoundingClientRect();
+            if (r.bottom < -200 || r.top > vh + 200) { ticking = false; return; }
+            const speed = parseFloat(el.dataset.parallax) || 0;
+            const offset = (r.top + r.height / 2 - vh / 2) * speed;
+            el.style.transform = "translate3d(0," + offset.toFixed(1) + "px,0)";
+          });
+          ticking = false;
+        });
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    }
+
+    return () => {
+      if (observer) observer.disconnect();
+      if (countObserver) countObserver.disconnect();
+      if (onScroll) window.removeEventListener("scroll", onScroll);
+    };
   }, [currentPage]);
 
   // --- CHAT SCROLL TO BOTTOM EFFECT ---
@@ -569,59 +651,128 @@ export default function Home() {
       <main>
         {/* PAGE 1: HOME */}
         <div className={`spa-page ${currentPage === "home" ? "active" : ""}`} id="home">
-          <section className="container">
+          <section className="container hero-section">
+            {/* floating gradient orbs */}
+            <div className="hero-orb orb-a" data-parallax="0.18"></div>
+            <div className="hero-orb orb-b" data-parallax="0.3"></div>
+            {/* animated transaction lines */}
+            <svg className="hero-lines" viewBox="0 0 1440 600" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M-20 380 Q 360 300 720 360 T 1460 320" fill="none" stroke="#478FCC" strokeWidth="1.5" strokeDasharray="6 14" style={{ animation: "pcDash 12s linear infinite", opacity: 0.4 }} />
+              <path d="M-20 460 Q 420 520 800 440 T 1460 470" fill="none" stroke="#55A5DB" strokeWidth="1.5" strokeDasharray="4 16" style={{ animation: "pcDash 16s linear infinite", opacity: 0.35 }} />
+            </svg>
+
             <div className="hero-wrap">
               <div className="hero-text">
-                <span className="kicker">Authorized Square Reseller</span>
-                <h1 className="hero-title">Modern Payment Processing & <span>POS Solutions</span> for Small Business</h1>
-                <p className="hero-desc">Elevate your checkout experience. We provide custom Square POS configurations, credit card processing consultations, and personalized onboarding support for entrepreneurs who want to scale.</p>
+                <div className="hero-badge">
+                  <span className="dot"></span>Authorized Square Reseller
+                </div>
+                <h1 className="hero-title">
+                  <span className="line">Payments &amp; POS,</span>
+                  <span className="line">engineered for the way</span>
+                  <span className="line"><span className="accent">small business</span> moves.</span>
+                </h1>
+                <p className="hero-desc">Custom Square POS configurations, transparent processing reviews, and 1-on-1 onboarding for entrepreneurs who want to scale — without the guesswork.</p>
                 <div className="hero-actions">
-                  <button className="btn primary" onClick={openSurvey}>Get Started</button>
+                  <button className="btn primary" onClick={openSurvey}>
+                    Get Started
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
                   <button className="btn ghost" onClick={() => navigateTo("products", "calculator")}>Estimate Monthly Cost</button>
-                  <button className="btn ghost" onClick={() => setIsVideoModalOpen(true)}>
-                    <Play size={16} fill="currentColor" /> Watch Video
+                  <button className="btn-video" onClick={() => setIsVideoModalOpen(true)}>
+                    <span className="play"><Play size={13} fill="currentColor" /></span>
+                    Watch Video
                   </button>
                 </div>
-              </div>
-              <div className="hero-image-container">
-                <Image src="/hero_pos_scene.jpg" alt="Modern POS System on a Countertop" fill priority sizes="(max-width: 1024px) 100vw, 50vw" />
-                <div className="hero-overlay">
-                  <div className="overlay-metric">
+                <div className="hero-stats">
+                  <div className="hero-stat">
                     <strong>$0/mo</strong>
-                    <span>Square Free Software</span>
+                    <span>Square free software</span>
                   </div>
-                  <div className="overlay-metric">
+                  <div className="hero-stat-divider"></div>
+                  <div className="hero-stat">
                     <strong>1-on-1</strong>
-                    <span>Expert Setup Support</span>
+                    <span>Expert setup support</span>
                   </div>
+                  <div className="hero-stat-divider"></div>
+                  <div className="hero-stat">
+                    <strong>No</strong>
+                    <span>Long-term contracts</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* animated composition */}
+              <div className="hero-visual">
+                <div className="hero-photo" data-parallax="-0.08">
+                  <Image src="/hero_pos_scene.jpg" alt="Modern POS system on a countertop" fill priority sizes="(max-width: 1080px) 100vw, 50vw" />
+                </div>
+                {/* payment approved card */}
+                <div className="float-card fc-pay" data-parallax="-0.22">
+                  <span className="ic">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#1E9E5A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </span>
+                  <div>
+                    <div className="lbl">Payment approved</div>
+                    <div className="val">$48.20</div>
+                  </div>
+                </div>
+                {/* analytics card */}
+                <div className="float-card fc-analytics" data-parallax="-0.34">
+                  <div className="head">
+                    <span className="t">Today&apos;s sales</span>
+                    <span className="up">+18%</span>
+                  </div>
+                  <div className="fc-bars">
+                    <span style={{ background: "#DCE7F4", height: "40%", animationDelay: ".1s" }}></span>
+                    <span style={{ background: "#DCE7F4", height: "62%", animationDelay: ".2s" }}></span>
+                    <span style={{ background: "#B9D2EC", height: "50%", animationDelay: ".3s" }}></span>
+                    <span style={{ background: "#478FCC", height: "90%", animationDelay: ".4s" }}></span>
+                    <span style={{ background: "#B9D2EC", height: "70%", animationDelay: ".5s" }}></span>
+                    <span style={{ background: "#DCE7F4", height: "55%", animationDelay: ".6s" }}></span>
+                  </div>
+                  <div className="fc-total"><span data-count="3140" data-prefix="$">$3,140</span></div>
+                </div>
+                {/* $0 software chip */}
+                <div className="float-card chip-card" data-parallax="-0.16">
+                  <div className="k">Software</div>
+                  <div className="v">$0/mo</div>
                 </div>
               </div>
             </div>
           </section>
 
+          {/* Trust marquee */}
+          <div className="marquee-strip">
+            <div className="marquee-track">
+              {[...trustItems, ...trustItems].map((item, idx) => (
+                <span key={idx}>{item}<span className="sep"></span></span>
+              ))}
+            </div>
+          </div>
+
           {/* Value Props */}
-          <section className="container animate-on-scroll" style={{ background: "var(--white)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border-color)" }}>
-            <div className="section-header">
+          <section className="container">
+            <div className="section-header left animate-on-scroll">
               <span className="kicker">Why Choose Us</span>
-              <h2>Tailormade Guidance for Modern Merchants</h2>
-              <p>We bridge the gap between complex payment systems and your business goals. Get direct advisor access and custom solutions.</p>
+              <h2>Tailormade guidance for modern merchants</h2>
+              <p>We bridge the gap between complex payment systems and your business goals — direct advisor access, transparent pricing, and configurations built around how you actually operate.</p>
             </div>
             <div className="grid grid-3">
-              <div className="card alt">
+              <div className="card animate-on-scroll" data-dir="left">
                 <div className="icon-circle">
                   <Search size={24} />
                 </div>
                 <h3>POS Consultation</h3>
                 <p>We review your business flow, location setup, and software features to align your business with the best-fitting POS tools.</p>
               </div>
-              <div className="card alt">
+              <div className="card animate-on-scroll" data-dir="up" data-delay="1">
                 <div className="icon-circle">
                   <FileText size={24} />
                 </div>
                 <h3>Statement Review</h3>
                 <p>Upload your recent credit card processing statement and get a transparent cost comparison, helping you eliminate hidden markup fees.</p>
               </div>
-              <div className="card alt">
+              <div className="card animate-on-scroll" data-dir="right" data-delay="2">
                 <div className="icon-circle">
                   <Settings size={24} />
                 </div>
@@ -632,14 +783,14 @@ export default function Home() {
           </section>
 
           {/* Industry Pathways */}
-          <section className="container animate-on-scroll">
-            <div className="section-header">
+          <section className="container">
+            <div className="section-header animate-on-scroll">
               <span className="kicker">Custom Pathways</span>
               <h2>Select Your Business Niche</h2>
               <p>We design specialized configurations matching the unique workflows of your industry.</p>
             </div>
             <div className="grid grid-3">
-              <div className="pathway-card">
+              <div className="pathway-card animate-on-scroll" data-dir="left">
                 <div className="pathway-img">
                   <Image src="/restaurant_path.jpg" alt="Modern restaurant kitchen" fill sizes="33vw" />
                 </div>
@@ -650,7 +801,7 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="pathway-card">
+              <div className="pathway-card animate-on-scroll" data-dir="up" data-delay="1">
                 <div className="pathway-img">
                   <Image src="/cafe_path.jpg" alt="Vibrant quick service coffee shop counter" fill sizes="33vw" />
                 </div>
@@ -661,7 +812,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="pathway-card">
+              <div className="pathway-card animate-on-scroll" data-dir="right" data-delay="2">
                 <div className="pathway-img">
                   <Image src="/retail_path.jpg" alt="Boutique retail shop apparel racks" fill sizes="33vw" />
                 </div>
@@ -676,7 +827,7 @@ export default function Home() {
         </div>
 
         {/* PAGE 2: ABOUT US */}
-        <div className={`spa-page ${currentPage === "about" ? "active" : ""}`} id="about">
+        <div className={`spa-page page-dark ${currentPage === "about" ? "active" : ""}`} id="about">
           <section className="container">
             <div className="story-block">
               <div className="hero-text">
@@ -705,28 +856,28 @@ export default function Home() {
 
             {/* Values Grid */}
             <div className="grid grid-4 animate-on-scroll">
-              <div className="card">
+              <div className="card value-tile">
                 <div className="icon-circle">
                   <Target size={20} />
                 </div>
                 <h4>Mission</h4>
                 <p style={{ fontSize: "0.85rem", marginTop: "0.5rem", marginBottom: 0 }}>Empower small businesses with clean payment tech and direct advice to survive and thrive.</p>
               </div>
-              <div className="card">
+              <div className="card value-tile">
                 <div className="icon-circle">
                   <Shield size={20} />
                 </div>
                 <h4>Trust</h4>
                 <p style={{ fontSize: "0.85rem", marginTop: "0.5rem", marginBottom: 0 }}>Total transparency on processing margins. We never lock you into multi-year contracts.</p>
               </div>
-              <div className="card">
+              <div className="card value-tile">
                 <div className="icon-circle">
                   <Clock size={20} />
                 </div>
                 <h4>Process</h4>
                 <p style={{ fontSize: "0.85rem", marginTop: "0.5rem", marginBottom: 0 }}>Step-by-step guidance from review, configuration mapping, to launch and live support.</p>
               </div>
-              <div className="card">
+              <div className="card value-tile">
                 <div className="icon-circle">
                   <TrendingUp size={20} />
                 </div>
@@ -939,12 +1090,13 @@ export default function Home() {
 
             <div className="calculator-wrap">
               <div>
-                {/* Section 1: Locations */}
+                {/* Section 1 */}
+                <div className="calc-panel">
                 <div className="calc-section-title">
                   <div className="calc-section-num">1</div>
-                  <h4>Location & Software Plan</h4>
+                  <h4>Locations &amp; software plan</h4>
                 </div>
-                
+
                 <div className="calc-form-row">
                   <div className="form-group">
                     <label>Number of Locations</label>
@@ -966,15 +1118,17 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="card alt" style={{ marginBottom: "2.5rem", padding: "1.5rem 2rem" }}>
-                  <h4 id="plan-info-title">Square Free</h4>
-                  <p id="plan-info-desc" style={{ fontSize: "0.9rem", marginBottom: 0, marginTop: "0.25rem" }}>Best for businesses that need the basic Square POS tools without a monthly software charge. Processing fees still apply.</p>
+                <div className="plan-info-note">
+                  <h4>{planInfo[selectedPlan].title}</h4>
+                  <p>{planInfo[selectedPlan].desc}</p>
                 </div>
+                </div>{/* /panel 1 */}
 
-                {/* Section 2: Hardware selection */}
+                {/* Section 2 */}
+                <div className="calc-panel">
                 <div className="calc-section-title">
                   <div className="calc-section-num">2</div>
-                  <h4>Add Hardware (Financed Monthly)</h4>
+                  <h4>Add hardware <span style={{ fontWeight: 400, color: "var(--text-faint)", fontSize: "0.85rem" }}>(financed monthly)</span></h4>
                 </div>
 
                 <div className="calc-item">
@@ -1109,11 +1263,15 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Section 3: Addon apps selection */}
+                </div>{/* /panel 2 */}
+
+                {/* Section 3 */}
+                <div className="calc-panel" style={{ opacity: selectedPlan === "free" ? 0.6 : 1, transition: "opacity .4s" }}>
                 <div className="calc-section-title">
                   <div className="calc-section-num">3</div>
-                  <h4>Add-on App Devices (Plus/Premium plans only)</h4>
+                  <h4>Add-on app devices</h4>
                 </div>
+                <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", margin: "-0.6rem 0 1.1rem 2.6rem" }}>{selectedPlan === "free" ? "Add-on apps unlock on the Plus or Premium plan. Select a paid plan above to configure." : "KDS and Kiosk app devices, priced per device for your selected plan."}</p>
 
                 <div className="calc-item">
                   <div className="calc-item-info">
@@ -1160,41 +1318,43 @@ export default function Home() {
                     <small>Plan-based</small>
                   </div>
                 </div>
+                </div>{/* /panel 3 */}
               </div>
 
               {/* Summary Box */}
               <div className="summary-box">
                 <h3 className="summary-title">Estimate Summary</h3>
                 <div className="summary-row">
-                  <span>Locations:</span>
+                  <span>Locations</span>
                   <strong>{locations}</strong>
                 </div>
                 <div className="summary-row">
-                  <span>Plan Level:</span>
+                  <span>Plan Level</span>
                   <strong>{selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}</strong>
                 </div>
                 <div className="summary-row">
-                  <span>Software Monthly:</span>
+                  <span>Software Monthly</span>
                   <strong>${planMonthly}/mo</strong>
                 </div>
                 <div className="summary-row">
-                  <span>Hardware Monthly:</span>
+                  <span>Hardware Monthly</span>
                   <strong>${hardwareMonthly}/mo</strong>
                 </div>
                 <div className="summary-row">
-                  <span>KDS Software:</span>
+                  <span>KDS Software</span>
                   <strong>${kdsMonthly}/mo</strong>
                 </div>
                 <div className="summary-row">
-                  <span>Kiosk Software:</span>
+                  <span>Kiosk Software</span>
                   <strong>${kioskMonthly}/mo</strong>
                 </div>
                 <div className="summary-row">
-                  <span>One-time Hardware:</span>
+                  <span>One-time Hardware</span>
                   <strong>${onetimeTotal}</strong>
                 </div>
+                <div className="summary-divider"></div>
                 <div className="summary-row total">
-                  <span>Est. Total Monthly:</span>
+                  <span>Est. Total Monthly</span>
                   <strong>${totalMonthly}/mo</strong>
                 </div>
 
@@ -1209,9 +1369,9 @@ export default function Home() {
                   </ul>
                 </div>
                 
-                <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "1rem", lineHeight: "1.4" }}>Financing totals are estimates based on standard Square credit terms. Taxes, processing rates, and shipping fees not included. Final pricing is subject to Square approval.</p>
+                <p style={{ fontSize: "0.7rem", color: "#7E8DA0", marginTop: "1rem", lineHeight: "1.5" }}>Financing totals are estimates based on standard Square credit terms. Taxes, processing rates, and shipping fees not included. Final pricing is subject to Square approval.</p>
 
-                <button className="btn primary" style={{ width: "100%", marginTop: "1.5rem" }} onClick={applyQuoteToContact}>Request Final Quote</button>
+                <button className="btn primary" style={{ width: "100%", marginTop: "1.25rem" }} onClick={applyQuoteToContact}>Request Final Quote</button>
               </div>
             </div>
           </section>
@@ -1287,7 +1447,7 @@ export default function Home() {
         </div>
 
         {/* PAGE 6: CONTACT US */}
-        <div className={`spa-page ${currentPage === "contact" ? "active" : ""}`} id="contact">
+        <div className={`spa-page page-dark ${currentPage === "contact" ? "active" : ""}`} id="contact">
           <section className="container">
             <div className="contact-grid">
               <div className="contact-info-card">
