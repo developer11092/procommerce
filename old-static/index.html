@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pro Commerce Solutions - Authorized Square Reseller</title>
+  <meta name="description" content="Authorized reseller of Square POS hardware, payment processing services, and custom POS consultations tailored for small businesses. Empowering entrepreneurs.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Sticky Glassmorphism Header -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#home" class="logo-wrap">
+        <img src="Logo.jpg" alt="Pro Commerce Solutions Logo">
+        <div class="logo-text">
+          <span class="brand-title">PRO COMMERCE</span>
+          <span class="brand-sub">Authorized Square Reseller</span>
+        </div>
+      </a>
+      
+      <button class="mobile-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <nav class="nav-menu">
+        <div class="nav-links">
+          <button class="nav-item active" data-page="home" onclick="navigateTo('home')">Home</button>
+          <button class="nav-item" data-page="about" onclick="navigateTo('about')">About Us</button>
+          <button class="nav-item" data-page="services" onclick="navigateTo('services')">Services</button>
+          <button class="nav-item" data-page="products" onclick="navigateTo('products')">Square Hardware</button>
+          <button class="nav-item" data-page="plans" onclick="navigateTo('plans')">Square Plans</button>
+          <button class="nav-item" data-page="contact" onclick="navigateTo('contact')">Contact Us</button>
+        </div>
+        <button class="btn primary small" onclick="openModal('survey-modal')">Get Started</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- PAGE 1: HOME -->
+    <div class="spa-page active" id="home">
+      <section class="container">
+        <div class="hero-wrap">
+          <div class="hero-text">
+            <span class="kicker">Authorized Square Reseller</span>
+            <h1 class="hero-title">Modern Payment Processing & <span>POS Solutions</span> for Small Business</h1>
+            <p class="hero-desc">Elevate your checkout experience. We provide custom Square POS configurations, credit card processing consultations, and personalized onboarding support for entrepreneurs who want to scale.</p>
+            <div class="hero-actions">
+              <button class="btn primary" onclick="openModal('survey-modal')">Get Started</button>
+              <button class="btn ghost" onclick="navigateTo('plans')">View Square Plans</button>
+              <button class="btn ghost" onclick="navigateTo('products', 'calculator')">Estimate Monthly Cost</button>
+            </div>
+          </div>
+          <div class="hero-image-container">
+            <img src="hero_pos_scene.jpg" alt="Modern POS System on a Countertop">
+            <div class="hero-overlay">
+              <div class="overlay-metric">
+                <strong>$0/mo</strong>
+                <span>Square Free Software</span>
+              </div>
+              <div class="overlay-metric">
+                <strong>1-on-1</strong>
+                <span>Expert Setup Support</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Value Propositions -->
+      <section class="container animate-on-scroll" style="background: #FFF; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+        <div class="section-header">
+          <span class="kicker">Why Choose Us</span>
+          <h2>Tailormade Guidance for Modern Merchants</h2>
+          <p>We bridge the gap between complex payment systems and your business goals. Get direct advisor access and custom solutions.</p>
+        </div>
+        <div class="grid grid-3">
+          <div class="card alt">
+            <div class="icon">🔍</div>
+            <h3>POS Consultation</h3>
+            <p>We review your business flow, location setup, and software features to align your business with the best-fitting POS tools.</p>
+          </div>
+          <div class="card alt">
+            <div class="icon">📊</div>
+            <h3>Statement Review</h3>
+            <p>Upload your recent credit card processing statement and get a transparent cost comparison, helping you eliminate hidden markup fees.</p>
+          </div>
+          <div class="card alt">
+            <div class="icon">🛠</div>
+            <h3>Hardware Setup</h3>
+            <p>From registers and handhelds to barcode scanners and label printers, we configure hardware setups suited to your daily operations.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Business Pathways -->
+      <section class="container animate-on-scroll">
+        <div class="section-header">
+          <span class="kicker">Custom Pathways</span>
+          <h2>Select Your Business Niche</h2>
+          <p>We design specialized configurations matching the unique workflows of your industry.</p>
+        </div>
+        <div class="grid grid-3">
+          <div class="pathway-card">
+            <div class="pathway-img">
+              <img src="restaurant_path.jpg" alt="Modern restaurant kitchen and ordering counter">
+            </div>
+            <div class="pathway-content">
+              <h3>Restaurants</h3>
+              <p>Tableside ordering, kitchen display screens (KDS), floor mapping, split checks, and hardware that keeps table turnaround times fast.</p>
+              <button class="btn primary small" onclick="openSurveyWithPath('restaurant')">Get Restaurant Survey</button>
+            </div>
+          </div>
+          
+          <div class="pathway-card">
+            <div class="pathway-img">
+              <img src="cafe_path.jpg" alt="Vibrant quick service coffee shop counter">
+            </div>
+            <div class="pathway-content">
+              <h3>Cafés & QSR</h3>
+              <p>Self-ordering kiosks, loyalty integrations, fast payment processing, modifiers, and multi-terminal systems to tackle peak hour rushes.</p>
+              <button class="btn primary small" onclick="openSurveyWithPath('cafe')">Get Café Survey</button>
+            </div>
+          </div>
+
+          <div class="pathway-card">
+            <div class="pathway-img">
+              <img src="retail_path.jpg" alt="Boutique retail shop apparel racks and checkout counter">
+            </div>
+            <div class="pathway-content">
+              <h3>Retail Stores</h3>
+              <p>Barcode scanning, advanced inventory trackers, customer profiles, vendor management, and multi-location product catalog sync.</p>
+              <button class="btn primary small" onclick="openSurveyWithPath('retail')">Get Retail Survey</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE 2: ABOUT US -->
+    <div class="spa-page" id="about">
+      <section class="container">
+        <div class="story-block">
+          <div class="hero-text">
+            <span class="kicker">Our Journey</span>
+            <h2>About Pro Commerce Solutions</h2>
+            <div class="story-text">
+              <p>Welcome to Pro Commerce Solutions, your trusted partner in modern payment processing. We specialize in credit card processing, ATM machines, and state-of-the-art POS systems tailored specifically for small businesses.</p>
+              <p>Our mission is to revolutionize the way small businesses manage transactions by introducing innovative and trending solutions designed for the black business community. At Pro Commerce Solutions, we understand the unique challenges faced by entrepreneurs in our community. We are dedicated to empowering small businesses with the latest technology and personalized support they need to thrive in today’s fast-paced digital economy.</p>
+              <p>Our team of experts is passionate about fostering growth and sustainability, ensuring that every client receives the guidance necessary to navigate the world of payment solutions. We pride ourselves on being at the forefront of payment processing, streamlining transactions while enhancing the customer experience. Join us at Pro Commerce Solutions as we pave the way for a brighter, more prosperous future for small businesses. Together, we can drive change and create lasting impact.</p>
+            </div>
+            <div class="hero-actions" style="margin-top: 2rem;">
+              <button class="btn primary" onclick="navigateTo('contact')">Request a Consultation</button>
+              <button class="btn ghost" onclick="navigateTo('services')">Explore Our Services</button>
+            </div>
+          </div>
+          <div class="hero-image-container">
+            <img src="dominique_profile.jpg" alt="Dominique Wright - CEO & POS Advisor">
+            <div class="hero-overlay">
+              <div class="overlay-metric">
+                <strong>Dominique Wright</strong>
+                <span>CEO & B2B Solutions Advisor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Values Grid -->
+        <div class="grid grid-4 animate-on-scroll">
+          <div class="card">
+            <div class="icon">🎯</div>
+            <h4>Mission</h4>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 0;">Empower small businesses with clean payment tech and direct advice to survive and thrive.</p>
+          </div>
+          <div class="card">
+            <div class="icon">🤝</div>
+            <h4>Trust</h4>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 0;">Total transparency on processing margins. We never lock you into multi-year contracts.</p>
+          </div>
+          <div class="card">
+            <div class="icon">🔄</div>
+            <h4>Process</h4>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 0;">Step-by-step guidance from review, configuration mapping, to launch and live support.</p>
+          </div>
+          <div class="card">
+            <div class="icon">📈</div>
+            <h4>Growth</h4>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 0;">Scaling Square ecosystem integrations to help you manage staff, loyalty and cashflow.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE 3: SERVICES -->
+    <div class="spa-page" id="services">
+      <section class="container">
+        <div class="section-header">
+          <span class="kicker">What We Do</span>
+          <h2>Our Core POS & Processing Services</h2>
+          <p>We provide professional advisory and onboarding services. All CTAs direct you to our B2B funnels for qualification and custom review.</p>
+        </div>
+        
+        <div class="grid grid-3">
+          <div class="card">
+            <div class="icon">💬</div>
+            <h3>Square POS Consultation</h3>
+            <p>Review business type, volume, locations, and hardware needs to map the correct Square configuration.</p>
+            <button class="btn ghost small" onclick="navigateTo('plans')">Compare Square Plans</button>
+          </div>
+
+          <div class="card">
+            <div class="icon">📁</div>
+            <h3>Processing Review</h3>
+            <p>Provide a recent processing statement, and we will break down standard Interchange costs vs your current markup.</p>
+            <button class="btn ghost small" onclick="openModal('upload-modal')">Upload Statement</button>
+          </div>
+
+          <div class="card">
+            <div class="icon">🍕</div>
+            <h3>Restaurant POS Setup</h3>
+            <p>Setup table-service, bars, cafés, and quick-service operations. Customize menus, display terminals and modifiers.</p>
+            <button class="btn ghost small" onclick="openSurveyWithPath('restaurant')">Restaurant Survey</button>
+          </div>
+
+          <div class="card">
+            <div class="icon">🛍</div>
+            <h3>Retail POS Setup</h3>
+            <p>Connect inventory catalogs, barcodes, scanners, checkout stands, receipt printers, and online store integrations.</p>
+            <button class="btn ghost small" onclick="openSurveyWithPath('retail')">Retail Survey</button>
+          </div>
+
+          <div class="card">
+            <div class="icon">📟</div>
+            <h3>Square Hardware Setup</h3>
+            <p>Browse registers, handhelds, stands, kiosks, and chip readers. We curate kits matching your checkout layout.</p>
+            <button class="btn ghost small" onclick="navigateTo('products')">View Hardware Catalog</button>
+          </div>
+
+          <div class="card">
+            <div class="icon">🚀</div>
+            <h3>Square Onboarding</h3>
+            <p>Ready to sign up? As an Authorized Reseller, we provide a direct link for faster profile creation and onboarding support.</p>
+            <button class="btn primary small" onclick="window.open('https://squareup.com/i/5AC21678BF', '_blank')">Start Onboarding</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE 4: PRODUCTS -->
+    <div class="spa-page" id="products">
+      <section class="container">
+        <div class="official-note">
+          <div class="official-note-icon">ℹ️</div>
+          <div>
+            <h4 style="margin-bottom: 0.25rem;">Official Square Hardware Catalog</h4>
+            <p style="font-size: 0.85rem; margin-bottom: 0; color: var(--blue-dark);">All hardware products showcased below are official Square devices. Clicking "View on Square" will redirect you to the official Square website in a new tab. Select "Get Recommendation" to request Dominique's review.</p>
+          </div>
+        </div>
+
+        <div class="section-header" id="hardware-catalog">
+          <span class="kicker">Checkout Hardware</span>
+          <h2>Explore Official Square Hardware</h2>
+          <p>Find the best devices for mobile checkout, countertop setups, self-service kiosks, or lightweight tap terminals.</p>
+        </div>
+
+        <!-- Hardware Catalog -->
+        <div class="grid grid-3 animate-on-scroll">
+          <!-- Register -->
+          <div class="hardware-card">
+            <div class="device-visual">
+              <span class="official-badge">Official Hardware</span>
+              <svg viewBox="0 0 360 180" role="img" aria-label="Square Register visual"><rect x="40" y="35" width="160" height="90" rx="16" fill="#2F3438"/><rect x="58" y="52" width="124" height="55" rx="10" fill="#EAF6FD"/><circle cx="145" cy="80" r="13" fill="#50A8D8"/><rect x="225" y="50" width="72" height="86" rx="13" fill="#FFFFFF" stroke="#2F3438" stroke-width="8"/><rect x="238" y="65" width="46" height="20" rx="5" fill="#EAF6FD"/><path d="M80 140h170" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/></svg>
+            </div>
+            <div class="hardware-body">
+              <h3>Square Register</h3>
+              <p>Complete countertop POS system with customer-facing display. Designed for high-volume retail or restaurant checkout.</p>
+              <div class="price-line"><strong>$899 or $44/mo (24 mo. financing)</strong></div>
+              <div class="square-links">
+                <button class="btn ghost small" onclick="openModal('survey-modal')">Get Recommendation</button>
+                <button class="btn secondary small" onclick="window.open('https://squareup.com/us/en/hardware/register', '_blank')">View on Square</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Handheld -->
+          <div class="hardware-card">
+            <div class="device-visual">
+              <span class="official-badge">Official Hardware</span>
+              <svg viewBox="0 0 360 180" role="img" aria-label="Square Handheld visual"><rect x="130" y="22" width="100" height="138" rx="26" fill="#2F3438"/><rect x="145" y="44" width="70" height="72" rx="10" fill="#EAF6FD"/><circle cx="180" cy="135" r="13" fill="#50A8D8"/><path d="M88 150h184" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/></svg>
+            </div>
+            <div class="hardware-body">
+              <h3>Square Handheld</h3>
+              <p>Compact, durable mobile terminal. Perfect for restaurant table ordering, line busting, patio checkouts, and staff on the move.</p>
+              <div class="price-line"><strong>$399 or $37/mo (12 mo. financing)</strong></div>
+              <div class="square-links">
+                <button class="btn ghost small" onclick="openModal('survey-modal')">Get Recommendation</button>
+                <button class="btn secondary small" onclick="window.open('https://squareup.com/us/en/hardware/handheld', '_blank')">View on Square</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Terminal -->
+          <div class="hardware-card">
+            <div class="device-visual">
+              <span class="official-badge">Official Hardware</span>
+              <svg viewBox="0 0 360 180" role="img" aria-label="Square Terminal visual"><rect x="105" y="25" width="150" height="130" rx="28" fill="#FFFFFF" stroke="#2F3438" stroke-width="9"/><rect x="128" y="50" width="104" height="55" rx="10" fill="#EAF6FD"/><circle cx="180" cy="126" r="14" fill="#50A8D8"/><path d="M118 155h124" stroke="#CBD5E1" stroke-width="8" stroke-linecap="round"/></svg>
+            </div>
+            <div class="hardware-body">
+              <h3>Square Terminal</h3>
+              <p>Compact card payment device with receipt printer built-in. Great for countertops or tableside receipt printing.</p>
+              <div class="price-line"><strong>$299 or $27/mo (12 mo. financing)</strong></div>
+              <div class="square-links">
+                <button class="btn ghost small" onclick="openModal('survey-modal')">Get Recommendation</button>
+                <button class="btn secondary small" onclick="window.open('https://squareup.com/us/en/hardware/terminal', '_blank')">View on Square</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stand -->
+          <div class="hardware-card">
+            <div class="device-visual">
+              <span class="official-badge">Official Hardware</span>
+              <svg viewBox="0 0 360 180" role="img" aria-label="Square Stand visual"><rect x="88" y="35" width="154" height="96" rx="20" fill="#2F3438"/><rect x="107" y="54" width="116" height="58" rx="10" fill="#EAF6FD"/><rect x="150" y="128" width="60" height="18" rx="8" fill="#50A8D8"/><path d="M115 154h130" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/></svg>
+            </div>
+            <div class="hardware-body">
+              <h3>Square Stand</h3>
+              <p>iPad countertop stand with contactless and chip reader built in. Turn an iPad into a sleek checkout monitor.</p>
+              <div class="price-line"><strong>$149 or $14/mo (12 mo. financing)</strong></div>
+              <div class="square-links">
+                <button class="btn ghost small" onclick="openModal('survey-modal')">Get Recommendation</button>
+                <button class="btn secondary small" onclick="window.open('https://squareup.com/us/en/hardware/stand', '_blank')">View on Square</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kiosk -->
+          <div class="hardware-card">
+            <div class="device-visual">
+              <span class="official-badge">Official Hardware</span>
+              <svg viewBox="0 0 360 180" role="img" aria-label="Square Kiosk visual"><rect x="115" y="25" width="130" height="95" rx="20" fill="#2F3438"/><rect x="135" y="45" width="90" height="52" rx="10" fill="#EAF6FD"/><rect x="160" y="118" width="40" height="34" rx="8" fill="#50A8D8"/><path d="M110 158h140" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/></svg>
+            </div>
+            <div class="hardware-body">
+              <h3>Square Kiosk</h3>
+              <p>Customer self-service checkout hardware. Shorter lines and faster turnaround for quick-service counters and cafes.</p>
+              <div class="price-line"><strong>$149 or $14/mo (12 mo. financing)</strong></div>
+              <div class="square-links">
+                <button class="btn ghost small" onclick="openModal('survey-modal')">Get Recommendation</button>
+                <button class="btn secondary small" onclick="window.open('https://squareup.com/us/en/hardware/kiosk', '_blank')">View on Square</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reader -->
+          <div class="hardware-card">
+            <div class="device-visual">
+              <span class="official-badge">Official Hardware</span>
+              <svg viewBox="0 0 360 180" role="img" aria-label="Square Reader contactless and chip visual"><rect x="120" y="40" width="120" height="100" rx="26" fill="#FFFFFF" stroke="#2F3438" stroke-width="9"/><path d="M168 75c16 16 16 34 0 50M193 65c25 28 25 52 0 80" fill="none" stroke="#50A8D8" stroke-width="9" stroke-linecap="round"/><path d="M118 154h124" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/></svg>
+            </div>
+            <div class="hardware-body">
+              <h3>Contactless & Chip Reader</h3>
+              <p>Simple pocket-sized card reader. Pairs via Bluetooth to run card checkouts directly on your iOS or Android phone.</p>
+              <div class="price-line"><strong>$59 one-time payment</strong></div>
+              <div class="square-links">
+                <button class="btn ghost small" onclick="openModal('survey-modal')">Get Recommendation</button>
+                <button class="btn secondary small" onclick="window.open('https://squareup.com/us/en/hardware/reader', '_blank')">View on Square</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cost Estimator / Calculator Section -->
+      <section class="container animate-on-scroll" id="calculator" style="border-top: 1px solid var(--border-color); padding-top: 6rem;">
+        <div class="section-header">
+          <span class="kicker">Estimate Monthly Cost</span>
+          <h2>Setup cost calculator</h2>
+          <p>Choose your software plan and calculate your approximate monthly layout. Hardware financing is calculated using standard term values.</p>
+        </div>
+
+        <div class="calculator-wrap">
+          <div>
+            <!-- Section 1: Locations -->
+            <div class="calc-section-title">
+              <div class="calc-section-num">1</div>
+              <h4>Location & Software Plan</h4>
+            </div>
+            
+            <div class="calc-form-row">
+              <div class="form-group">
+                <label for="calc-locations">Number of Locations</label>
+                <input type="number" id="calc-locations" min="1" value="1" onchange="changeLocations(this.value)" onkeyup="changeLocations(this.value)">
+              </div>
+              <div class="form-group">
+                <label for="calc-plan">Square Software Plan</label>
+                <select id="calc-plan" onchange="changePlan(this.value)">
+                  <option value="free">Square Free — $0/location</option>
+                  <option value="plus">Square Plus — $49/location</option>
+                  <option value="premium">Square Premium — $149/location</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card alt" style="margin-bottom: 2.5rem; padding: 1.5rem 2rem;">
+              <h4 id="plan-info-title">Square Free</h4>
+              <p id="plan-info-desc" style="font-size: 0.9rem; margin-bottom: 0; margin-top: 0.25rem;">Best for businesses that need the basic Square POS tools without a monthly software charge. Processing fees still apply.</p>
+            </div>
+
+            <!-- Section 2: Hardware selection -->
+            <div class="calc-section-title">
+              <div class="calc-section-num">2</div>
+              <h4>Add Hardware (Financed Monthly)</h4>
+            </div>
+
+            <div class="calc-item">
+              <div class="calc-item-info">
+                <h4>Square Register (2nd gen)</h4>
+                <p>High-volume desktop register with dedicated buyer terminal screen.</p>
+                <div class="calc-item-meta">
+                  <span>$44/mo</span>
+                  <span>24 mo. term</span>
+                  <span>Register POS</span>
+                </div>
+              </div>
+              <div class="calc-item-qty">
+                <label>Qty</label>
+                <input class="calc-qty-input" type="number" min="0" value="0" data-hardware="register" onchange="updateCalculator()" onkeyup="updateCalculator()">
+                <small>$44/mo</small>
+              </div>
+            </div>
+
+            <div class="calc-item">
+              <div class="calc-item-info">
+                <h4>Square Handheld</h4>
+                <p>Mobile checkout terminal. Table ordering, line busting, patio checkouts.</p>
+                <div class="calc-item-meta">
+                  <span>$37/mo</span>
+                  <span>12 mo. term</span>
+                  <span>Mobile POS</span>
+                </div>
+              </div>
+              <div class="calc-item-qty">
+                <label>Qty</label>
+                <input class="calc-qty-input" type="number" min="0" value="0" data-hardware="handheld" onchange="updateCalculator()" onkeyup="updateCalculator()">
+                <small>$37/mo</small>
+              </div>
+            </div>
+
+            <div class="calc-item">
+              <div class="calc-item-info">
+                <h4>Square Terminal</h4>
+                <p>Handheld chip card scanner and receipt printer in one unit.</p>
+                <div class="calc-item-meta">
+                  <span>$27/mo</span>
+                  <span>12 mo. term</span>
+                  <span>Receipt POS</span>
+                </div>
+              </div>
+              <div class="calc-item-qty">
+                <label>Qty</label>
+                <input class="calc-qty-input" type="number" min="0" value="0" data-hardware="terminal" onchange="updateCalculator()" onkeyup="updateCalculator()">
+                <small>$27/mo</small>
+              </div>
+            </div>
+
+            <div class="calc-item">
+              <div class="calc-item-info">
+                <h4>Square Stand</h4>
+                <p>Turn an iPad into a sleek countertop checkout screen.</p>
+                <div class="calc-item-meta">
+                  <span>$14/mo</span>
+                  <span>12 mo. term</span>
+                  <span>iPad POS</span>
+                </div>
+              </div>
+              <div class="calc-item-qty">
+                <label>Qty</label>
+                <input class="calc-qty-input" type="number" min="0" value="0" data-hardware="stand" onchange="updateCalculator()" onkeyup="updateCalculator()">
+                <small>$14/mo</small>
+              </div>
+            </div>
+
+            <div class="calc-item">
+              <div class="calc-item-info">
+                <h4>Square Kiosk Hardware</h4>
+                <p>iPad wall/stand kiosk frame for self-ordering customer inputs.</p>
+                <div class="calc-item-meta">
+                  <span>$14/mo</span>
+                  <span>12 mo. term</span>
+                  <span>Self Order</span>
+                </div>
+              </div>
+              <div class="calc-item-qty">
+                <label>Qty</label>
+                <input class="calc-qty-input" type="number" min="0" value="0" data-hardware="kioskHardware" onchange="updateCalculator()" onkeyup="updateCalculator()">
+                <small>$14/mo</small>
+              </div>
+            </div>
+
+            <div class="calc-item">
+              <div class="calc-item-info">
+                <h4>Square Reader Contactless + Chip</h4>
+                <p>Lightweight pocket scanner for cards/Apple Pay. Not financed.</p>
+                <div class="calc-item-meta">
+                  <span>$59 One-time</span>
+                  <span>Not monthly</span>
+                  <span>Tap POS</span>
+                </div>
+              </div>
+              <div class="calc-item-qty">
+                <label>Qty</label>
+                <input class="calc-qty-input" type="number" min="0" value="0" data-hardware="reader" onchange="updateCalculator()" onkeyup="updateCalculator()">
+                <small>$59</small>
+              </div>
+            </div>
+
+            <!-- Section 3: Addon apps selection -->
+            <div class="calc-section-title">
+              <div class="calc-section-num">3</div>
+              <h4>Add-on App Devices (Plus/Premium plans only)</h4>
+            </div>
+
+            <div class="calc-item">
+              <div class="calc-item-info">
+                <h4>Square KDS (Kitchen Display System) App</h4>
+                <p>Send orders digitally to back kitchen monitors. Cost is $30/device (Plus) or $20/device (Premium).</p>
+                <div class="calc-item-meta">
+                  <span>Plus: $30/mo</span>
+                  <span>Premium: $20/mo</span>
+                  <span>Kitchen App</span>
+                </div>
+              </div>
+              <div class="calc-item-qty">
+                <label>Qty</label>
+                <input type="number" id="calc-qty-kds" min="0" value="0" onchange="updateCalculator()" onkeyup="updateCalculator()">
+                <small>Plan-based</small>
+              </div>
+            </div>
+
+            <div class="calc-item">
+              <div class="calc-item-info">
+                <h4>Square Kiosk App Devices</h4>
+                <p>Run ordering flows on your kiosk screens. Cost is $50/device (Plus) or $30/device (Premium).</p>
+                <div class="calc-item-meta">
+                  <span>Plus: $50/mo</span>
+                  <span>Premium: $30/mo</span>
+                  <span>Kiosk App</span>
+                </div>
+              </div>
+              <div class="calc-item-qty">
+                <label>Qty</label>
+                <input type="number" id="calc-qty-kiosk" min="0" value="0" onchange="updateCalculator()" onkeyup="updateCalculator()">
+                <small>Plan-based</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Box -->
+          <div class="summary-box">
+            <h3 class="summary-title">Estimate Summary</h3>
+            <div class="summary-row">
+              <span>Locations:</span>
+              <strong id="sum-locations">1</strong>
+            </div>
+            <div class="summary-row">
+              <span>Plan Level:</span>
+              <strong id="sum-plan-name">Free</strong>
+            </div>
+            <div class="summary-row">
+              <span>Software Monthly:</span>
+              <strong id="sum-plan-cost">$0/mo</strong>
+            </div>
+            <div class="summary-row">
+              <span>Hardware Monthly:</span>
+              <strong id="sum-hardware-cost">$0/mo</strong>
+            </div>
+            <div class="summary-row">
+              <span>KDS Software:</span>
+              <strong id="sum-kds-cost">$0/mo</strong>
+            </div>
+            <div class="summary-row">
+              <span>Kiosk Software:</span>
+              <strong id="sum-kiosk-cost">$0/mo</strong>
+            </div>
+            <div class="summary-row">
+              <span>One-time Hardware:</span>
+              <strong id="sum-onetime">$0</strong>
+            </div>
+            <div class="summary-row total">
+              <span>Est. Total Monthly:</span>
+              <strong id="sum-total">$0/mo</strong>
+            </div>
+
+            <div class="summary-details">
+              <h5>Included Selections:</h5>
+              <ul id="sum-details-list">
+                <li>No items selected yet.</li>
+              </ul>
+            </div>
+            
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.4;">Financing totals are estimates based on standard Square credit terms. Taxes, processing rates, and shipping fees not included. Final pricing is subject to Square approval.</p>
+
+            <button class="btn primary" style="width: 100%; margin-top: 1.5rem;" onclick="applyQuoteToContact()">Request Final Quote</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE 5: SQUARE PLANS -->
+    <div class="spa-page" id="plans">
+      <section class="container">
+        <div class="section-header">
+          <span class="kicker">Compare Options</span>
+          <h2>Select Your Square Plan</h2>
+          <p>Choose the tier that fits your volume and scaling needs. Plus and Premium packages unlock advanced operations.</p>
+        </div>
+
+        <div class="plans-grid animate-on-scroll">
+          <!-- Free -->
+          <div class="plan-card">
+            <h3 class="plan-name">Square Free</h3>
+            <div class="plan-price">$0<span>/location</span></div>
+            <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Core POS tools to get your business processing cards immediately.</p>
+            <ul>
+              <li>Standard transaction checkout app</li>
+              <li>Free Square online ordering page</li>
+              <li>Invoicing and basic client profiles</li>
+              <li>Multi-location inventory tracking</li>
+              <li>Offline mode card payments</li>
+            </ul>
+            <button class="btn ghost" onclick="navigateTo('contact')">Ask About Free</button>
+          </div>
+
+          <!-- Plus -->
+          <div class="plan-card featured">
+            <span class="plan-featured-tag">Recommended</span>
+            <h3 class="plan-name">Square Plus</h3>
+            <div class="plan-price">$49<span>/location</span></div>
+            <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">Advanced features and staff tools for active, scaling businesses.</p>
+            <ul>
+              <li>Includes all features in Free</li>
+              <li>Advanced inventory (COGS, vendor orders)</li>
+              <li>Staff shift tracking & employee access levels</li>
+              <li>Barcode scanner catalog configurations</li>
+              <li>Unlocked KDS and Kiosk app add-ons</li>
+              <li>Priority customer support access</li>
+            </ul>
+            <button class="btn primary" onclick="navigateTo('contact')">Get Plus Config</button>
+          </div>
+
+          <!-- Premium -->
+          <div class="plan-card">
+            <h3 class="plan-name">Square Premium</h3>
+            <div class="plan-price">Custom<span>/custom pricing</span></div>
+            <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">For high-volume merchants processing over $250k/year.</p>
+            <ul>
+              <li>Includes all features in Plus</li>
+              <li>Lower negotiated transaction card rates</li>
+              <li>Custom API integrations and API webhooks</li>
+              <li>Dedicated Account Manager assigned</li>
+              <li>24/7 emergency hotline priority lines</li>
+              <li>Custom contract and hardware setups</li>
+            </ul>
+            <button class="btn ghost" onclick="navigateTo('contact')">Contact For Premium</button>
+          </div>
+        </div>
+
+        <div class="official-note animate-on-scroll" style="margin-top: 4rem; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+          <div style="max-width: 750px;">
+            <h4>High-Volume Processing?</h4>
+            <p style="font-size: 0.9rem; margin-bottom: 0;">If your business processes over $250,000 annually, you qualify for custom payment processing rates. Upload your merchant statement and Dominique will build a custom rate proposal.</p>
+          </div>
+          <button class="btn secondary" onclick="openModal('upload-modal')">Upload Processing Statement</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE 6: CONTACT US -->
+    <div class="spa-page" id="contact">
+      <section class="container">
+        <div class="contact-grid">
+          <div class="contact-info-card">
+            <span class="kicker">Direct Contact</span>
+            <h2>Talk to Dominique</h2>
+            <p style="margin-top: 0.75rem;">Get direct, human support for your merchant onboarding. We do not use anonymous ticketing systems.</p>
+            
+            <div class="contact-meta-item">
+              <div class="contact-meta-icon">📞</div>
+              <div class="contact-meta-content">
+                <h4>Call / Text Direct</h4>
+                <p>(612) 924-5404</p>
+              </div>
+            </div>
+
+            <div class="contact-meta-item">
+              <div class="contact-meta-icon">✉️</div>
+              <div class="contact-meta-content">
+                <h4>Email Address</h4>
+                <p>procommercesolutions@gmail.com</p>
+              </div>
+            </div>
+
+            <div class="contact-meta-item">
+              <div class="contact-meta-icon">👤</div>
+              <div class="contact-meta-content">
+                <h4>Lead Advisor</h4>
+                <p>Dominique Wright, CEO</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Consultation Form -->
+          <div class="card" id="consultation-form">
+            <h3>Request a consultation</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 2rem;">Provide your details below to schedule your consultation call.</p>
+            
+            <form onsubmit="submitConsultation(event)" id="consultation-form-el">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="contact-first-name">First Name *</label>
+                  <input type="text" id="contact-first-name" placeholder="First name" required>
+                </div>
+                <div class="form-group">
+                  <label for="contact-last-name">Last Name *</label>
+                  <input type="text" id="contact-last-name" placeholder="Last name" required>
+                </div>
+                <div class="form-group">
+                  <label for="contact-email">Email Address *</label>
+                  <input type="email" id="contact-email" placeholder="Email address" required>
+                </div>
+                <div class="form-group">
+                  <label for="contact-phone">Phone Number *</label>
+                  <input type="tel" id="contact-phone" placeholder="Phone number" required>
+                </div>
+                <div class="form-group">
+                  <label for="contact-business-name">Business Name *</label>
+                  <input type="text" id="contact-business-name" placeholder="Business name" required>
+                </div>
+                <div class="form-group">
+                  <label for="contact-business-type">Business Type</label>
+                  <select id="contact-business-type">
+                    <option value="Restaurant (table service)">Restaurant (table service)</option>
+                    <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                    <option value="Retail">Retail</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="contact-revenue">Monthly Revenue ($)</label>
+                  <input type="text" id="contact-revenue" placeholder="Monthly revenue">
+                </div>
+                <div class="form-group">
+                  <label for="contact-plan">Interested Plan</label>
+                  <select id="contact-plan">
+                    <option value="free">Square Free</option>
+                    <option value="plus">Square Plus</option>
+                    <option value="premium">Square Premium / Custom</option>
+                  </select>
+                </div>
+                <div class="form-group full">
+                  <label for="contact-message">Consultation Notes / Selections</label>
+                  <textarea id="contact-message" rows="5" placeholder="Let us know what hardware or workflow features you need help setting up..."></textarea>
+                </div>
+                
+                <div class="form-group full">
+                  <label>Current Merchant Statement (Optional)</label>
+                  <div class="upload-area">
+                    <div class="upload-area-icon">📁</div>
+                    <p>Drag your credit card processing statement here, or <strong>browse files</strong></p>
+                    <input type="file" id="contact-file" style="display:none" onchange="handleFileSelect(this, 'contact-file-name')">
+                    <span class="upload-filename" id="contact-file-name"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" class="btn ghost" onclick="openModal('upload-modal')">Upload Statement Only</button>
+                <button type="submit" class="btn primary">Submit Request</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- DEVELOPER SECTION DASHBOARD (As found in prototype specifications) -->
+    <section class="dev-section">
+      <div class="container" style="padding-top: 0; padding-bottom: 2rem;">
+        <span class="kicker" style="color: var(--blue-light);">Developer Dashboard</span>
+        <h2 style="margin-bottom: 0.5rem;">Prototype Implementation Details</h2>
+        <p style="color: #94A3B8; margin-bottom: 2rem;">This website incorporates the client flow, visual catalog, cost calculations, chatbot dialog, and survey modals. Switch tabs to review backend instructions.</p>
+        
+        <div class="dev-tabs">
+          <button class="dev-tab active" id="dev-tab-overview" onclick="showDevPage('overview')">Overview</button>
+          <button class="dev-tab" id="dev-tab-missing" onclick="showDevPage('missing')">Missing Features</button>
+          <button class="dev-tab" id="dev-tab-backend" onclick="showDevPage('backend')">Backend Integrations</button>
+          <button class="dev-tab" id="dev-tab-calculator" onclick="showDevPage('calculator')">Calculator Formulas</button>
+          <button class="dev-tab" id="dev-tab-qa" onclick="showDevPage('qa')">QA Checklist</button>
+        </div>
+
+        <div class="dev-panel active" id="dev-page-overview">
+          <div class="grid grid-3">
+            <div style="background:#0F172A; padding:1.5rem; border-radius: var(--radius-md); border:1px solid #334155;">
+              <h4>Responsive Page Layouts</h4>
+              <p style="font-size:0.85rem; color:#94A3B8; margin-top:0.5rem; margin-bottom:0;">Full layout adaptivity across 1440px desktop, 1024px laptop grid reduction, 768px single-column collapse, and 480px mobile adjustments.</p>
+            </div>
+            <div style="background:#0F172A; padding:1.5rem; border-radius: var(--radius-md); border:1px solid #334155;">
+              <h4>Google Sheets Lead Pipeline</h4>
+              <p style="font-size:0.85rem; color:#94A3B8; margin-top:0.5rem; margin-bottom:0;">All lead inputs (DBA, locations, hardware quantites, plans, volumes, chatbot details) are mapped to write directly to Google Sheets database tabs.</p>
+            </div>
+            <div style="background:#0F172A; padding:1.5rem; border-radius: var(--radius-md); border:1px solid #334155;">
+              <h4>Secure Statements Upload</h4>
+              <p style="font-size:0.85rem; color:#94A3B8; margin-top:0.5rem; margin-bottom:0;">Drag-and-drop file inputs set up to route statements into private cloud storage folders, saving only secure references to Sheet trackers.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dev-panel" id="dev-page-missing">
+          <table class="dev-table">
+            <thead>
+              <tr><th>Feature</th><th>Prototype Status</th><th>Production Guideline</th><th>Priority</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Survey API Save</td><td>Faked in JS</td><td>Post lead form inputs to webhook endpoint (Google Sheets writer)</td><td><span class="dev-status req">Required</span></td></tr>
+              <tr><td>Statement Storage</td><td>Faked in JS</td><td>Route files to Google Drive folder, write private link only to Sheets</td><td><span class="dev-status req">Required</span></td></tr>
+              <tr><td>AI Chatbot Pipeline</td><td>Faked in JS</td><td>OpenAI assistant integration. Save conversation transcript to chatbot tab</td><td><span class="dev-status req">Required</span></td></tr>
+              <tr><td>Analytics Tracking</td><td>Not Active</td><td>Inject GA4 script tag and hook clicks on "View on Square" CTA button clicks</td><td><span class="dev-status rec">Recommended</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="dev-panel" id="dev-page-backend">
+          <h4>Google Sheets Tab Mapping Configuration</h4>
+          <div class="dev-code">Lead Columns:
+1. Website Leads: First Name, Last Name, Email, Phone, Business Name, Business Type, Monthly Revenue, Plan, Selections
+2. Chatbot Leads: Date, Phone, Business Name, Conversation Summary Transcript, Lead Source (Chatbot)
+3. Statement Uploads: Upload ID, Business Name, Email, Processor, Drive File Link, Status (Statement Received)
+4. Lead Tracker: status options: New Lead, Contacted, Statement Received, Quote Prepared, Onboarding Sent, Closed Won, Closed Lost</div>
+        </div>
+
+        <div class="dev-panel" id="dev-page-calculator">
+          <h4>Calculator App Pricing Formula</h4>
+          <div class="dev-code">planMonthly = planCost[selectedPlan] * locationsCount
+hardwareMonthly = registerQty * 44 + handheldQty * 37 + terminalQty * 27 + standQty * 14 + kioskHardwareQty * 14
+oneTimeHardware = readerQty * 59
+
+Addon calculations:
+if (selectedPlan === 'free'):
+  KDS App = Unavailable
+  Kiosk App = Unavailable
+else if (selectedPlan === 'plus'):
+  KDS App = kdsQty * 30
+  Kiosk App = kioskQty * 50
+else if (selectedPlan === 'premium'):
+  KDS App = kdsQty * 20
+  Kiosk App = kioskQty * 30
+
+totalMonthly = planMonthly + hardwareMonthly + kdsMonthly + kioskMonthly</div>
+        </div>
+
+        <div class="dev-panel" id="dev-page-qa">
+          <div class="grid grid-2">
+            <div>
+              <h4>Production QA Checklist</h4>
+              <ul style="list-style: none; padding-top: 1rem; color: #94A3B8; font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">✓ Accessibility: ARIA labels on mobile hamburger button and close links.</li>
+                <li style="margin-bottom: 0.5rem;">✓ Focus trap activated inside survey modal container.</li>
+                <li style="margin-bottom: 0.5rem;">✓ Contrast ratios exceed WCAG AA 4.5:1 standard parameters.</li>
+                <li style="margin-bottom: 0.5rem;">✓ Pre-tagging business pathways maps correctly inside survey input select element.</li>
+              </ul>
+            </div>
+            <div class="dev-warning">
+              <strong>Caution:</strong> Ensure no API keys, sheets tokens, or direct webhook endpoints are exposed inside raw frontend JavaScript files (app.js) during production launch.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer Layout -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#home" class="logo-wrap">
+          <div class="logo-text">
+            <span class="brand-title" style="color:var(--white)">PRO COMMERCE</span>
+            <span class="brand-sub">Authorized Square Reseller</span>
+          </div>
+        </a>
+        <p>Your trusted B2B partner for credit card processing, ATM placements, and official Square POS configuration consultations.</p>
+        <span class="tag">Authorized Reseller</span>
+      </div>
+      
+      <div class="footer-links">
+        <h4>Navigate Site</h4>
+        <ul>
+          <li><a href="#home">Home Page</a></li>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#services">Our Services</a></li>
+          <li><a href="#products">Square Hardware</a></li>
+          <li><a href="#plans">Square Plans</a></li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-contact">
+        <h4>Direct Contact</h4>
+        <p><strong>Dominique Wright</strong><br>CEO, Pro Commerce Solutions</p>
+        <p><strong>Phone:</strong> (612) 924-5404</p>
+        <p><strong>Email:</strong> procommercesolutions@gmail.com</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Pro Commerce Solutions. Authorized reseller of Square products and services. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- MODAL: SURVEY MODAL (Multi-step) -->
+  <div class="modal-overlay" id="survey-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h3>Merchant Setup Survey</h3>
+          <p style="font-size: 0.85rem; margin-bottom: 0;">Configure your customized Square recommendation.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('survey-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="survey-progress">
+          <div class="survey-progress-step active" data-progress="1"></div>
+          <div class="survey-progress-step" data-progress="2"></div>
+          <div class="survey-progress-step" data-progress="3"></div>
+        </div>
+
+        <form id="survey-form-el" onsubmit="event.preventDefault(); submitSurvey();">
+          <!-- Step 1: Contact Details -->
+          <div class="survey-step active" data-step="1">
+            <h4 style="margin-bottom: 1rem;">Step 1: Contact Information</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>First Name *</label>
+                <input type="text" placeholder="First name" required>
+              </div>
+              <div class="form-group">
+                <label>Last Name *</label>
+                <input type="text" placeholder="Last name" required>
+              </div>
+              <div class="form-group">
+                <label>Email Address *</label>
+                <input type="email" placeholder="Email address" required>
+              </div>
+              <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="tel" placeholder="Phone number" required>
+              </div>
+            </div>
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+              <button type="button" class="btn primary" onclick="setSurveyStep(2)">Next Step</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Business details -->
+          <div class="survey-step" data-step="2">
+            <h4 style="margin-bottom: 1rem;">Step 2: Business Workflows</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Business Type *</label>
+                <select id="survey-business-type" required>
+                  <option value="">Select industry type...</option>
+                  <option value="Restaurant (table service)">Restaurant (table service)</option>
+                  <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                  <option value="Retail">Retail</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Industry *</label>
+                <input type="text" placeholder="Industry category" required>
+              </div>
+              <div class="form-group">
+                <label>Monthly Revenue ($) *</label>
+                <input type="text" placeholder="Estimated revenue" required>
+              </div>
+              <div class="form-group">
+                <label>Projected Volume ($) *</label>
+                <input type="text" placeholder="Projected monthly volume" required>
+              </div>
+            </div>
+            <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+              <button type="button" class="btn ghost" onclick="setSurveyStep(1)">Previous</button>
+              <button type="button" class="btn primary" onclick="setSurveyStep(3)">Next Step</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Legal name & files -->
+          <div class="survey-step" data-step="3">
+            <h4 style="margin-bottom: 1rem;">Step 3: Registration details</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Merchant DBA *</label>
+                <input type="text" placeholder="Doing Business As name" required>
+              </div>
+              <div class="form-group">
+                <label>Legal Business Name *</label>
+                <input type="text" placeholder="Legal registered entity name" required>
+              </div>
+              <div class="form-group full">
+                <label>Street Address *</label>
+                <input type="text" placeholder="Business street address" required>
+              </div>
+              <div class="form-group">
+                <label>City *</label>
+                <input type="text" placeholder="City" required>
+              </div>
+              <div class="form-group">
+                <label>State *</label>
+                <input type="text" placeholder="State" required>
+              </div>
+              <div class="form-group">
+                <label>Zip *</label>
+                <input type="text" placeholder="Zip code" required>
+              </div>
+              <div class="form-group full">
+                <label>Processing Statement (Optional)</label>
+                <div class="upload-area">
+                  <div class="upload-area-icon">📁</div>
+                  <p>Drag file here or <strong>browse files</strong> to upload statement</p>
+                  <input type="file" id="survey-file" style="display:none" onchange="handleFileSelect(this, 'survey-file-name')">
+                  <span class="upload-filename" id="survey-file-name"></span>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+              <button type="button" class="btn ghost" onclick="setSurveyStep(2)">Previous</button>
+              <button type="submit" class="btn primary">Submit Survey</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: UPLOAD STATEMENT MODAL -->
+  <div class="modal-overlay" id="upload-modal">
+    <div class="modal-container" style="max-width: 600px;">
+      <div class="modal-header">
+        <div>
+          <h3>Upload Statement</h3>
+          <p style="font-size: 0.85rem; margin-bottom: 0;">Upload your recent processing statement for rates comparison.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('upload-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="event.preventDefault(); submitUpload();">
+          <div class="form-grid single">
+            <div class="form-group">
+              <label>Business Name *</label>
+              <input type="text" placeholder="Your business name" required>
+            </div>
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" placeholder="Your email address" required>
+            </div>
+            <div class="form-group">
+              <label>Current Processor *</label>
+              <input type="text" placeholder="e.g. Clover, Toast, Chase Paymentech" required>
+            </div>
+            <div class="form-group">
+              <label>Upload Statement File *</label>
+              <div class="upload-area">
+                <div class="upload-area-icon">📁</div>
+                <p>Drag statement file here or <strong>browse files</strong></p>
+                <input type="file" id="modal-upload-file" style="display:none" required onchange="handleFileSelect(this, 'modal-upload-file-name')">
+                <span class="upload-filename" id="modal-upload-file-name"></span>
+              </div>
+            </div>
+          </div>
+          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.4;"><strong>Privacy notice:</strong> Your credit card processing statement contains sensitive business identifiers and volume details. Files are uploaded directly to our secure private folder.</p>
+          <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn ghost" onclick="closeModal('upload-modal')">Cancel</button>
+            <button type="submit" class="btn primary">Submit Statement</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHATBOT WIDGET -->
+  <div class="chat-widget">
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-head">
+        <h4>Pro Commerce Solutions</h4>
+        <button class="modal-close" style="color:var(--white)" onclick="closeChat()">&times;</button>
+      </div>
+      <div class="chat-body" id="chat-body">
+        <div class="chat-msg bot">
+          Hi, welcome to Pro Commerce Solutions. I'm Dominique's B2B POS assistant. I can help you select hardware, estimate monthly costs, or configure Square setups.
+        </div>
+        <div class="chat-msg bot">
+          What would you like to explore today?
+        </div>
+        <div class="chat-quick-replies">
+          <button class="chat-quick-btn" onclick="chatReply('I need a Square POS system')">Square POS System</button>
+          <button class="chat-quick-btn" onclick="chatReply('I want hardware pricing')">Hardware Pricing</button>
+          <button class="chat-quick-btn" onclick="chatReply('I run a restaurant')">Configure Restaurant Setup</button>
+          <button class="chat-quick-btn" onclick="chatReply('I want to upload a statement')">Compare Processing Rates</button>
+        </div>
+      </div>
+      <div class="chat-foot">
+        <input type="text" id="chat-input" placeholder="Type a message...">
+        <button onclick="sendChatMessage()" aria-label="Send message">➔</button>
+      </div>
+    </div>
+    <button class="chat-bubble" onclick="toggleChat()" aria-label="Open Chat Assistant">💬</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

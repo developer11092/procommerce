@@ -1,0 +1,1790 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import { 
+  Search, 
+  FileText, 
+  Settings, 
+  Phone, 
+  Mail, 
+  User, 
+  Check, 
+  AlertCircle, 
+  Send, 
+  X, 
+  Menu, 
+  ShieldCheck, 
+  HelpCircle, 
+  ArrowRight, 
+  DollarSign, 
+  ArrowUpRight,
+  TrendingUp,
+  Shield,
+  Target,
+  Clock,
+  Utensils,
+  ShoppingBag,
+  Zap,
+  Info,
+  ChevronRight,
+  Sparkles,
+  Play
+} from "lucide-react";
+
+export default function Home() {
+  // --- STATE ---
+  const [currentPage, setCurrentPage] = useState("home");
+  const [currentSection, setCurrentSection] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Modals
+  const [isSurveyOpen, setIsSurveyOpen] = useState(false);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [surveyStep, setSurveyStep] = useState(1);
+
+  // Form Submissions states
+  const [surveySubmitSuccess, setSurveySubmitSuccess] = useState(false);
+  const [uploadSubmitSuccess, setUploadSubmitSuccess] = useState(false);
+  const [contactSubmitSuccess, setContactSubmitSuccess] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(null); // 'survey' | 'upload' | 'contact'
+
+  // Calculator Selections
+  const [locations, setLocations] = useState(1);
+  const [selectedPlan, setSelectedPlan] = useState("free");
+  const [hardwareQty, setHardwareQty] = useState({
+    register: 0,
+    handheld: 0,
+    terminal: 0,
+    stand: 0,
+    kioskHardware: 0,
+    reader: 0
+  });
+  const [addonQty, setAddonQty] = useState({
+    kds: 0,
+    kiosk: 0
+  });
+
+  // Contact Form Inputs
+  const [contactForm, setContactForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    businessName: "",
+    businessType: "Restaurant (table service)",
+    monthlyRevenue: "",
+    interestedPlan: "free",
+    message: "",
+    fileName: ""
+  });
+
+  // Survey Form Inputs
+  const [surveyForm, setSurveyForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    businessType: "Restaurant (table service)",
+    industry: "",
+    monthlyRevenue: "",
+    projectedVolume: "",
+    dbaName: "",
+    legalName: "",
+    streetAddress: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    fileName: ""
+  });
+
+  // Upload Form Inputs
+  const [uploadForm, setUploadForm] = useState({
+    businessName: "",
+    email: "",
+    currentProcessor: "",
+    fileName: ""
+  });
+
+  // Chatbot State
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState([
+    { sender: "bot", text: "Hi, welcome to Pro Commerce Solutions. I'm Dominique's B2B POS assistant. I can help you select hardware, estimate monthly costs, or configure Square setups." },
+    { sender: "bot", text: "What would you like to explore today?" }
+  ]);
+  const [isBotTyping, setIsBotTyping] = useState(false);
+  const chatBodyRef = useRef(null);
+
+  // Pricing Matrix configuration
+  const pricingMatrix = {
+    plans: { free: 0, plus: 49, premium: 149 },
+    plansLabels: { free: "Square Free", plus: "Square Plus", premium: "Square Premium" },
+    hardware: {
+      register: { name: "Square Register (2nd gen)", price: 44, term: "24 mo." },
+      handheld: { name: "Square Handheld", price: 37, term: "12 mo." },
+      terminal: { name: "Square Terminal", price: 27, term: "12 mo." },
+      stand: { name: "Square Stand", price: 14, term: "12 mo." },
+      kioskHardware: { name: "Square Kiosk Hardware", price: 14, term: "12 mo." },
+      reader: { name: "Square Reader contactless + chip", price: 59, term: "one-time", onetime: true }
+    },
+    addons: {
+      kds: { free: 0, plus: 30, premium: 20 },
+      kiosk: { free: 0, plus: 50, premium: 30 }
+    }
+  };
+
+  // --- HASH ROUTER EFFECT ---
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash || "#home";
+      const parts = hash.substring(1).split("/");
+      const pageId = parts[0];
+      const sectionId = parts[1] || null;
+      
+      setCurrentPage(pageId);
+      setCurrentSection(sectionId);
+      setMobileMenuOpen(false);
+
+      if (sectionId) {
+        window.scrollTo({ top: 0, behavior: "instant" });
+        setTimeout(() => {
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 150);
+      } else {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+    };
+
+    window.addEventListener("hashchange", handleHash);
+    handleHash();
+
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
+
+  // --- SCROLL ACTION FOR NAVBAR ---
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // --- SCROLL ANIMATIONS OBSERVER ---
+  useEffect(() => {
+    const scrollElements = document.querySelectorAll(".animate-on-scroll");
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.05,
+      rootMargin: "0px 0px -40px 0px"
+    });
+    
+    scrollElements.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, [currentPage]);
+
+  // --- CHAT SCROLL TO BOTTOM EFFECT ---
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [chatMessages, isBotTyping]);
+
+  // --- INTERACTION HELPER LINKS ---
+  const navigateTo = (pageId, sectionId = null) => {
+    const sectionPart = sectionId ? "/" + sectionId : "";
+    window.location.hash = pageId + sectionPart;
+  };
+
+  // --- CALCULATOR TOTALS COMPUTATION ---
+  const planMonthly = pricingMatrix.plans[selectedPlan] * locations;
+  
+  let hardwareMonthly = 0;
+  let onetimeTotal = 0;
+  const hardwareSummaryList = [];
+
+  Object.keys(hardwareQty).forEach(key => {
+    const qty = hardwareQty[key];
+    if (qty <= 0) return;
+    const config = pricingMatrix.hardware[key];
+    const cost = config.price * qty;
+    if (config.onetime) {
+      onetimeTotal += cost;
+      hardwareSummaryList.push(`${config.name} × ${qty} ($${cost} one-time)`);
+    } else {
+      hardwareMonthly += cost;
+      hardwareSummaryList.push(`${config.name} × ${qty} ($${cost}/mo over ${config.term})`);
+    }
+  });
+
+  const kdsQty = selectedPlan === "free" ? 0 : addonQty.kds;
+  const kioskQty = selectedPlan === "free" ? 0 : addonQty.kiosk;
+  const kdsMonthly = selectedPlan === "free" ? 0 : pricingMatrix.addons.kds[selectedPlan] * kdsQty;
+  const kioskMonthly = selectedPlan === "free" ? 0 : pricingMatrix.addons.kiosk[selectedPlan] * kioskQty;
+
+  if (kdsQty > 0) hardwareSummaryList.push(`Square KDS App Devices × ${kdsQty} ($${kdsMonthly}/mo)`);
+  if (kioskQty > 0) hardwareSummaryList.push(`Square Kiosk App Devices × ${kioskQty} ($${kioskMonthly}/mo)`);
+
+  const totalMonthly = planMonthly + hardwareMonthly + kdsMonthly + kioskMonthly;
+
+  const changeLocations = (val) => {
+    const parsed = parseInt(val, 10);
+    setLocations(isNaN(parsed) || parsed < 1 ? 1 : parsed);
+  };
+
+  const changePlan = (plan) => {
+    if (pricingMatrix.plans[plan] !== undefined) {
+      setSelectedPlan(plan);
+    }
+  };
+
+  const handleQtyChange = (type, key, value) => {
+    const val = Math.max(0, parseInt(value, 10) || 0);
+    if (type === "hardware") {
+      setHardwareQty(prev => ({ ...prev, [key]: val }));
+    } else {
+      setAddonQty(prev => ({ ...prev, [key]: val }));
+    }
+  };
+
+  // "Request Final Quote" ->Prefills contact form and navigates there
+  const applyQuoteToContact = () => {
+    const items = [];
+    Object.keys(hardwareQty).forEach(key => {
+      const qty = hardwareQty[key];
+      if (qty > 0) items.push(`${pricingMatrix.hardware[key].name} (Qty: ${qty})`);
+    });
+    if (kdsQty > 0) items.push(`Square KDS App Devices (Qty: ${kdsQty})`);
+    if (kioskQty > 0) items.push(`Square Kiosk App Devices (Qty: ${kioskQty})`);
+
+    const summaryText = `Hello Dominique,\n\nI estimated my monthly Square setup via the calculator and would like a quote. Here is my setup:\n- Locations: ${locations}\n- Software Plan: ${pricingMatrix.plansLabels[selectedPlan]}\n- Selected Hardware/Apps:\n  ${items.length > 0 ? items.join('\n  ') : 'None selected'}\n- Est. Total Monthly: $${totalMonthly}/mo\n- One-time Cost: $${onetimeTotal}\n\nPlease review and let me know the next steps.`;
+
+    setContactForm(prev => ({
+      ...prev,
+      interestedPlan: selectedPlan,
+      message: summaryText
+    }));
+
+    navigateTo("contact", "consultation-form");
+  };
+
+  // --- FORMS SUBMISSION MOCKS ---
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    setLoadingAction("contact");
+    
+    // Simulate API fetch delay
+    setTimeout(() => {
+      setLoadingAction(null);
+      setContactSubmitSuccess(true);
+    }, 1200);
+  };
+
+  const handleSurveySubmit = (e) => {
+    e.preventDefault();
+    setLoadingAction("survey");
+    
+    // Simulate API fetch delay
+    setTimeout(() => {
+      setLoadingAction(null);
+      setSurveySubmitSuccess(true);
+    }, 1200);
+  };
+
+  const handleUploadSubmit = (e) => {
+    e.preventDefault();
+    setLoadingAction("upload");
+    
+    // Simulate API fetch delay
+    setTimeout(() => {
+      setLoadingAction(null);
+      setUploadSubmitSuccess(true);
+    }, 1200);
+  };
+
+  // File selection change handler
+  const handleFileChange = (e, formType) => {
+    const file = e.target.files[0];
+    if (file) {
+      const label = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+      if (formType === "contact") {
+        setContactForm(prev => ({ ...prev, fileName: label }));
+      } else if (formType === "survey") {
+        setSurveyForm(prev => ({ ...prev, fileName: label }));
+      } else if (formType === "upload") {
+        setUploadForm(prev => ({ ...prev, fileName: label }));
+      }
+    }
+  };
+
+  // Modal control
+  const openSurvey = () => {
+    setSurveyStep(1);
+    setSurveySubmitSuccess(false);
+    setIsSurveyOpen(true);
+  };
+
+  const openSurveyWithPath = (path) => {
+    let type = "Restaurant (table service)";
+    if (path === "cafe") type = "Restaurant (quick service)";
+    if (path === "retail") type = "Retail";
+    
+    setSurveyForm(prev => ({ ...prev, businessType: type }));
+    openSurvey();
+  };
+
+  const openUploadModal = () => {
+    setUploadSubmitSuccess(false);
+    setIsUploadOpen(true);
+  };
+
+  // --- CHATBOT LOGIC ---
+  const sendChatMessage = () => {
+    if (!chatInput.trim()) return;
+    const userText = chatInput;
+    setChatInput("");
+    setChatMessages(prev => [...prev, { sender: "user", text: userText }]);
+
+    setIsBotTyping(true);
+
+    setTimeout(() => {
+      setIsBotTyping(false);
+      let reply = "I'm Dominique's B2B POS assistant. I can help configure your Square setup, estimate monthly costs, or submit a request for consultation. Would you like to schedule a free 1-on-1 session with us?";
+      const q = userText.toLowerCase();
+
+      if (q.includes("pos") || q.includes("square") || q.includes("system")) {
+        reply = "Square offers tailormade POS systems for Restaurants, Retailers, and service-based businesses. Would you like me to open our Business Survey so we can recommend the perfect custom hardware setup?";
+      } else if (q.includes("price") || q.includes("pricing") || q.includes("cost") || q.includes("estimate") || q.includes("hardware")) {
+        reply = "Our hardware financing starts from $14/mo (Square Stand) up to $44/mo (Square Register). You can use our Setup Estimator on the Products page or I can help collect a custom request here. What industry are you in?";
+      } else if (q.includes("restaurant") || q.includes("cafe") || q.includes("food")) {
+        reply = "For restaurants, we recommend combining Square Plus ($49/mo) with Register ($44/mo) and Handhelds ($37/mo) for tableside checkout. What is your business name?";
+      } else if (q.includes("retail") || q.includes("store") || q.includes("shop")) {
+        reply = "For retail operations, the Square Retail POS software manages inventory levels seamlessly. Would you like to schedule a custom statement review to compare rates?";
+      } else if (q.includes("upload") || q.includes("statement") || q.includes("rate") || q.includes("fee")) {
+        reply = "Uploading a processing statement is the fastest way to check your potential savings. Would you like me to open the secure statement uploader modal right now?";
+        setTimeout(() => openUploadModal(), 1500);
+      }
+
+      setChatMessages(prev => [...prev, { sender: "bot", text: reply }]);
+    }, 1000);
+  };
+
+  const chatReply = (text) => {
+    setChatMessages(prev => [...prev, { sender: "user", text }]);
+    setIsBotTyping(true);
+    
+    setTimeout(() => {
+      setIsBotTyping(false);
+      let reply = "Great choice. I can help qualify your business. Dominique Wright specializes in high-trust Square conversions. Would you like to launch the onboarding setup survey now?";
+      
+      const q = text.toLowerCase();
+      if (q.includes("pricing") || q.includes("hardware")) {
+        reply = "Understood. Our Setup Estimator on the Products page helps you calculate custom hardware configurations. Or, let me open our Business Survey modal to get a direct advisor review.";
+      } else if (q.includes("restaurant")) {
+        reply = "Perfect, for restaurant workflows we can pre-tag you for KDS integrations. Shall we launch the recommendation survey?";
+      } else if (q.includes("statement") || q.includes("rates")) {
+        reply = "Excellent. I will open the upload modal for your processing statement now so we can review the rates.";
+        setTimeout(() => openUploadModal(), 1500);
+      }
+
+      setChatMessages(prev => [...prev, { sender: "bot", text: reply }]);
+    }, 1000);
+  };
+
+  const handleStepNext = () => {
+    // Basic validations
+    if (surveyStep === 1) {
+      if (!surveyForm.firstName || !surveyForm.lastName || !surveyForm.email || !surveyForm.phone) {
+        alert("Please fill out all required fields.");
+        return;
+      }
+    } else if (surveyStep === 2) {
+      if (!surveyForm.industry || !surveyForm.monthlyRevenue || !surveyForm.projectedVolume) {
+        alert("Please fill out all required fields.");
+        return;
+      }
+    }
+    setSurveyStep(prev => prev + 1);
+  };
+
+  return (
+    <>
+      {/* Sticky Header */}
+      <header className={`topbar ${scrolled ? "scrolled" : ""}`}>
+        <div className="topbar-inner">
+          <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap">
+            <Image src="/Logo.jpg" alt="Pro Commerce Solutions Logo" width={48} height={48} className="logo-img" />
+            <div className="logo-text">
+              <span className="brand-title">PRO COMMERCE</span>
+              <span className="brand-sub">Authorized Square Reseller</span>
+            </div>
+          </div>
+
+          <button 
+            className="mobile-toggle" 
+            aria-label="Toggle Navigation Menu" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+
+          <nav className={`nav-menu ${mobileMenuOpen ? "active" : ""}`}>
+            <div className="nav-links">
+              <button className={`nav-item ${currentPage === "home" ? "active" : ""}`} onClick={() => navigateTo("home")}>Home</button>
+              <button className={`nav-item ${currentPage === "about" ? "active" : ""}`} onClick={() => navigateTo("about")}>About Us</button>
+              <button className={`nav-item ${currentPage === "services" ? "active" : ""}`} onClick={() => navigateTo("services")}>Services</button>
+              <button className={`nav-item ${currentPage === "products" && currentSection !== "calculator" ? "active" : ""}`} onClick={() => navigateTo("products")}>Square Hardware</button>
+              <button className={`nav-item ${currentPage === "plans" ? "active" : ""}`} onClick={() => navigateTo("plans")}>Square Plans</button>
+              <button className={`nav-item ${currentPage === "products" && currentSection === "calculator" ? "active" : ""}`} onClick={() => navigateTo("products", "calculator")}>Cost Calculator</button>
+              <button className={`nav-item ${currentPage === "contact" ? "active" : ""}`} onClick={() => navigateTo("contact")}>Contact Us</button>
+            </div>
+            <button className="btn primary small" onClick={openSurvey}>Get Started</button>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        {/* PAGE 1: HOME */}
+        <div className={`spa-page ${currentPage === "home" ? "active" : ""}`} id="home">
+          <section className="container">
+            <div className="hero-wrap">
+              <div className="hero-text">
+                <span className="kicker">Authorized Square Reseller</span>
+                <h1 className="hero-title">Modern Payment Processing & <span>POS Solutions</span> for Small Business</h1>
+                <p className="hero-desc">Elevate your checkout experience. We provide custom Square POS configurations, credit card processing consultations, and personalized onboarding support for entrepreneurs who want to scale.</p>
+                <div className="hero-actions">
+                  <button className="btn primary" onClick={openSurvey}>Get Started</button>
+                  <button className="btn ghost" onClick={() => navigateTo("products", "calculator")}>Estimate Monthly Cost</button>
+                  <button className="btn ghost" onClick={() => window.open("https://drive.google.com/file/d/18Wbv1P9HwI35UsmNl-VUWRZFuQPAEl_c/view", "_blank")}>
+                    <Play size={16} fill="currentColor" /> Watch Video
+                  </button>
+                </div>
+              </div>
+              <div className="hero-image-container">
+                <Image src="/hero_pos_scene.jpg" alt="Modern POS System on a Countertop" fill priority sizes="(max-width: 1024px) 100vw, 50vw" />
+                <div className="hero-overlay">
+                  <div className="overlay-metric">
+                    <strong>$0/mo</strong>
+                    <span>Square Free Software</span>
+                  </div>
+                  <div className="overlay-metric">
+                    <strong>1-on-1</strong>
+                    <span>Expert Setup Support</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Value Props */}
+          <section className="container animate-on-scroll" style={{ background: "var(--white)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border-color)" }}>
+            <div className="section-header">
+              <span className="kicker">Why Choose Us</span>
+              <h2>Tailormade Guidance for Modern Merchants</h2>
+              <p>We bridge the gap between complex payment systems and your business goals. Get direct advisor access and custom solutions.</p>
+            </div>
+            <div className="grid grid-3">
+              <div className="card alt">
+                <div className="icon-circle">
+                  <Search size={24} />
+                </div>
+                <h3>POS Consultation</h3>
+                <p>We review your business flow, location setup, and software features to align your business with the best-fitting POS tools.</p>
+              </div>
+              <div className="card alt">
+                <div className="icon-circle">
+                  <FileText size={24} />
+                </div>
+                <h3>Statement Review</h3>
+                <p>Upload your recent credit card processing statement and get a transparent cost comparison, helping you eliminate hidden markup fees.</p>
+              </div>
+              <div className="card alt">
+                <div className="icon-circle">
+                  <Settings size={24} />
+                </div>
+                <h3>Hardware Setup</h3>
+                <p>From registers and handhelds to barcode scanners and label printers, we configure hardware setups suited to your daily operations.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Industry Pathways */}
+          <section className="container animate-on-scroll">
+            <div className="section-header">
+              <span className="kicker">Custom Pathways</span>
+              <h2>Select Your Business Niche</h2>
+              <p>We design specialized configurations matching the unique workflows of your industry.</p>
+            </div>
+            <div className="grid grid-3">
+              <div className="pathway-card">
+                <div className="pathway-img">
+                  <Image src="/restaurant_path.jpg" alt="Modern restaurant kitchen" fill sizes="33vw" />
+                </div>
+                <div className="pathway-content">
+                  <h3>Restaurants</h3>
+                  <p>Tableside ordering, kitchen display screens (KDS), floor mapping, split checks, and hardware that keeps table turnaround times fast.</p>
+                  <button className="btn primary small" onClick={() => openSurveyWithPath("restaurant")}>Get Restaurant Survey</button>
+                </div>
+              </div>
+              
+              <div className="pathway-card">
+                <div className="pathway-img">
+                  <Image src="/cafe_path.jpg" alt="Vibrant quick service coffee shop counter" fill sizes="33vw" />
+                </div>
+                <div className="pathway-content">
+                  <h3>Cafés & QSR</h3>
+                  <p>Self-ordering kiosks, loyalty integrations, fast payment processing, modifiers, and multi-terminal systems to tackle peak hour rushes.</p>
+                  <button className="btn primary small" onClick={() => openSurveyWithPath("cafe")}>Get Café Survey</button>
+                </div>
+              </div>
+
+              <div className="pathway-card">
+                <div className="pathway-img">
+                  <Image src="/retail_path.jpg" alt="Boutique retail shop apparel racks" fill sizes="33vw" />
+                </div>
+                <div className="pathway-content">
+                  <h3>Retail Stores</h3>
+                  <p>Barcode scanning, advanced inventory trackers, customer profiles, vendor management, and multi-location product catalog sync.</p>
+                  <button className="btn primary small" onClick={() => openSurveyWithPath("retail")}>Get Retail Survey</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* PAGE 2: ABOUT US */}
+        <div className={`spa-page ${currentPage === "about" ? "active" : ""}`} id="about">
+          <section className="container">
+            <div className="story-block">
+              <div className="hero-text">
+                <span className="kicker">Our Journey</span>
+                <h2>About Pro Commerce Solutions</h2>
+                <div className="story-text">
+                  <p>Welcome to Pro Commerce Solutions, your trusted partner in modern payment processing. We specialize in credit card processing, ATM machines, and state-of-the-art POS systems tailored specifically for small businesses.</p>
+                  <p>Our mission is to revolutionize the way small businesses manage transactions by introducing innovative and trending solutions designed for the black business community. At Pro Commerce Solutions, we understand the unique challenges faced by entrepreneurs in our community. We are dedicated to empowering small businesses with the latest technology and personalized support they need to thrive in today’s fast-paced digital economy.</p>
+                  <p>Our team of experts is passionate about fostering growth and sustainability, ensuring that every client receives the guidance necessary to navigate the world of payment solutions. We pride ourselves on being at the forefront of payment processing, streamlining transactions while enhancing the customer experience. Join us at Pro Commerce Solutions as we pave the way for a brighter, more prosperous future for small businesses. Together, we can drive change and create lasting impact.</p>
+                </div>
+                <div className="hero-actions" style={{ marginTop: "2rem" }}>
+                  <button className="btn primary" onClick={() => navigateTo("contact")}>Request a Consultation</button>
+                  <button className="btn ghost" onClick={() => navigateTo("services")}>Explore Our Services</button>
+                </div>
+              </div>
+              <div className="hero-image-container">
+                <Image src="/dominique_profile.jpg" alt="Dominique Wright - CEO & POS Advisor" fill sizes="(max-width: 1024px) 100vw, 50vw" />
+                <div className="hero-overlay">
+                  <div className="overlay-metric">
+                    <strong>Dominique Wright</strong>
+                    <span>CEO & B2B Solutions Advisor</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Values Grid */}
+            <div className="grid grid-4 animate-on-scroll">
+              <div className="card">
+                <div className="icon-circle">
+                  <Target size={20} />
+                </div>
+                <h4>Mission</h4>
+                <p style={{ fontSize: "0.85rem", marginTop: "0.5rem", marginBottom: 0 }}>Empower small businesses with clean payment tech and direct advice to survive and thrive.</p>
+              </div>
+              <div className="card">
+                <div className="icon-circle">
+                  <Shield size={20} />
+                </div>
+                <h4>Trust</h4>
+                <p style={{ fontSize: "0.85rem", marginTop: "0.5rem", marginBottom: 0 }}>Total transparency on processing margins. We never lock you into multi-year contracts.</p>
+              </div>
+              <div className="card">
+                <div className="icon-circle">
+                  <Clock size={20} />
+                </div>
+                <h4>Process</h4>
+                <p style={{ fontSize: "0.85rem", marginTop: "0.5rem", marginBottom: 0 }}>Step-by-step guidance from review, configuration mapping, to launch and live support.</p>
+              </div>
+              <div className="card">
+                <div className="icon-circle">
+                  <TrendingUp size={20} />
+                </div>
+                <h4>Growth</h4>
+                <p style={{ fontSize: "0.85rem", marginTop: "0.5rem", marginBottom: 0 }}>Scaling Square ecosystem integrations to help you manage staff, loyalty and cashflow.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* PAGE 3: SERVICES */}
+        <div className={`spa-page ${currentPage === "services" ? "active" : ""}`} id="services">
+          <section className="container">
+            <div className="section-header">
+              <span className="kicker">What We Do</span>
+              <h2>Our Core POS & Processing Services</h2>
+              <p>We provide professional advisory and onboarding services. All CTAs direct you to our B2B funnels for qualification and custom review.</p>
+            </div>
+            
+            <div className="grid grid-3">
+              <div className="card">
+                <div className="icon-circle">
+                  <Search size={24} />
+                </div>
+                <h3>Square POS Consultation</h3>
+                <p>Review business type, volume, locations, and hardware needs to map the correct Square configuration.</p>
+                <button className="btn ghost small" style={{ marginTop: "1rem" }} onClick={() => navigateTo("plans")}>Compare Square Plans</button>
+              </div>
+
+              <div className="card">
+                <div className="icon-circle">
+                  <FileText size={24} />
+                </div>
+                <h3>Processing Review</h3>
+                <p>Provide a recent processing statement, and we will break down standard Interchange costs vs your current markup.</p>
+                <button className="btn ghost small" style={{ marginTop: "1rem" }} onClick={openUploadModal}>Upload Statement</button>
+              </div>
+
+              <div className="card">
+                <div className="icon-circle">
+                  <Utensils size={24} />
+                </div>
+                <h3>Restaurant POS Setup</h3>
+                <p>Setup table-service, bars, cafés, and quick-service operations. Customize menus, display terminals and modifiers.</p>
+                <button className="btn ghost small" style={{ marginTop: "1rem" }} onClick={() => openSurveyWithPath("restaurant")}>Restaurant Survey</button>
+              </div>
+
+              <div className="card">
+                <div className="icon-circle">
+                  <ShoppingBag size={24} />
+                </div>
+                <h3>Retail POS Setup</h3>
+                <p>Connect inventory catalogs, barcodes, scanners, checkout stands, receipt printers, and online store integrations.</p>
+                <button className="btn ghost small" style={{ marginTop: "1rem" }} onClick={() => openSurveyWithPath("retail")}>Retail Survey</button>
+              </div>
+
+              <div className="card">
+                <div className="icon-circle">
+                  <Settings size={24} />
+                </div>
+                <h3>Square Hardware Setup</h3>
+                <p>Browse registers, handhelds, stands, kiosks, and chip readers. We curate kits matching your checkout layout.</p>
+                <button className="btn ghost small" style={{ marginTop: "1rem" }} onClick={() => navigateTo("products")}>View Hardware Catalog</button>
+              </div>
+
+              <div className="card">
+                <div className="icon-circle">
+                  <Zap size={24} />
+                </div>
+                <h3>Square Onboarding</h3>
+                <p>Ready to sign up? As an Authorized Reseller, we provide a direct link for faster profile creation and onboarding support.</p>
+                <button className="btn primary small" style={{ marginTop: "1rem" }} onClick={() => window.open("https://squareup.com/i/5AC21678BF", "_blank")}>Start Onboarding</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* PAGE 4: PRODUCTS */}
+        <div className={`spa-page ${currentPage === "products" ? "active" : ""}`} id="products">
+          <section className="container">
+            <div className="official-note">
+              <div className="official-note-icon">
+                <Info size={20} />
+              </div>
+              <div>
+                <h4 style={{ marginBottom: "0.25rem" }}>Official Square Hardware Catalog</h4>
+                <p style={{ fontSize: "0.85rem", marginBottom: 0, color: "var(--blue-dark)" }}>All hardware products showcased below are official Square devices. Clicking "View on Square" will redirect you to the official Square website in a new tab. Select "Get Recommendation" to request Dominique's review.</p>
+              </div>
+            </div>
+
+            <div className="section-header" id="hardware-catalog">
+              <span className="kicker">Checkout Hardware</span>
+              <h2>Explore Official Square Hardware</h2>
+              <p>Find the best devices for mobile checkout, countertop setups, self-service kiosks, or lightweight tap terminals.</p>
+            </div>
+
+            {/* Hardware Catalog */}
+            <div className="grid grid-3 animate-on-scroll">
+              {/* Register */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Register visual"><rect x="40" y="35" width="160" height="90" rx="16" fill="#2F3438"/><rect x="58" y="52" width="124" height="55" rx="10" fill="#EAF6FD"/><circle cx="145" cy="80" r="13" fill="#50A8D8"/><rect x="225" y="50" width="72" height="86" rx="13" fill="#FFFFFF" stroke="#2F3438" strokeWidth="8"/><rect x="238" y="65" width="46" height="20" rx="5" fill="#EAF6FD"/><path d="M80 140h170" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Square Register</h3>
+                  <p>Complete countertop POS system with customer-facing display. Designed for high-volume retail or restaurant checkout.</p>
+                  <div className="price-line"><strong>$899 or $44/mo (24 mo. financing)</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/register", "_blank")}>View on Square</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Handheld */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Handheld visual"><rect x="130" y="22" width="100" height="138" rx="26" fill="#2F3438"/><rect x="145" y="44" width="70" height="72" rx="10" fill="#EAF6FD"/><circle cx="180" cy="135" r="13" fill="#50A8D8"/><path d="M88 150h184" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Square Handheld</h3>
+                  <p>Compact, durable mobile terminal. Perfect for restaurant table ordering, line busting, patio checkouts, and staff on the move.</p>
+                  <div className="price-line"><strong>$399 or $37/mo (12 mo. financing)</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/handheld", "_blank")}>View on Square</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terminal */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Terminal visual"><rect x="105" y="25" width="150" height="130" rx="28" fill="#FFFFFF" stroke="#2F3438" strokeWidth="9"/><rect x="128" y="50" width="104" height="55" rx="10" fill="#EAF6FD"/><circle cx="180" cy="126" r="14" fill="#50A8D8"/><path d="M118 155h124" stroke="#CBD5E1" strokeWidth="8" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Square Terminal</h3>
+                  <p>Compact card payment device with receipt printer built-in. Great for countertops or tableside receipt printing.</p>
+                  <div className="price-line"><strong>$299 or $27/mo (12 mo. financing)</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/terminal", "_blank")}>View on Square</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stand */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Stand visual"><rect x="88" y="35" width="154" height="96" rx="20" fill="#2F3438"/><rect x="107" y="54" width="116" height="58" rx="10" fill="#EAF6FD"/><rect x="150" y="128" width="60" height="18" rx="8" fill="#50A8D8"/><path d="M115 154h130" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Square Stand</h3>
+                  <p>iPad countertop stand with contactless and chip reader built in. Turn an iPad into a sleek checkout monitor.</p>
+                  <div className="price-line"><strong>$149 or $14/mo (12 mo. financing)</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/stand", "_blank")}>View on Square</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Kiosk */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Kiosk visual"><rect x="115" y="25" width="130" height="95" rx="20" fill="#2F3438"/><rect x="135" y="45" width="90" height="52" rx="10" fill="#EAF6FD"/><rect x="160" y="118" width="40" height="34" rx="8" fill="#50A8D8"/><path d="M110 158h140" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Square Kiosk</h3>
+                  <p>Customer self-service checkout hardware. Shorter lines and faster turnaround for quick-service counters and cafes.</p>
+                  <div className="price-line"><strong>$149 or $14/mo (12 mo. financing)</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/kiosk", "_blank")}>View on Square</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Reader */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Reader contactless and chip visual"><rect x="120" y="40" width="120" height="100" rx="26" fill="#FFFFFF" stroke="#2F3438" strokeWidth="9"/><path d="M168 75c16 16 16 34 0 50M193 65c25 28 25 52 0 80" fill="none" stroke="#50A8D8" strokeWidth="9" strokeLinecap="round"/><path d="M118 154h124" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Contactless & Chip Reader</h3>
+                  <p>Simple pocket-sized card reader. Pairs via Bluetooth to run card checkouts directly on your iOS or Android phone.</p>
+                  <div className="price-line"><strong>$59 one-time payment</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/reader", "_blank")}>View on Square</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Cost Estimator / Calculator Section */}
+          <section className="container animate-on-scroll" id="calculator" style={{ borderTop: "1px solid var(--border-color)", paddingTop: "5rem", marginTop: "5rem" }}>
+            <div className="section-header">
+              <span className="kicker">Estimate Monthly Cost</span>
+              <h2>Setup cost calculator</h2>
+              <p>Choose your software plan and calculate your approximate monthly layout. Hardware financing is calculated using standard term values.</p>
+            </div>
+
+            <div className="calculator-wrap">
+              <div>
+                {/* Section 1: Locations */}
+                <div className="calc-section-title">
+                  <div className="calc-section-num">1</div>
+                  <h4>Location & Software Plan</h4>
+                </div>
+                
+                <div className="calc-form-row">
+                  <div className="form-group">
+                    <label>Number of Locations</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={locations} 
+                      onChange={(e) => changeLocations(e.target.value)} 
+                      onKeyUp={(e) => changeLocations(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Square Software Plan</label>
+                    <select value={selectedPlan} onChange={(e) => changePlan(e.target.value)}>
+                      <option value="free">Square Free — $0/location</option>
+                      <option value="plus">Square Plus — $49/location</option>
+                      <option value="premium">Square Premium — $149/location</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="card alt" style={{ marginBottom: "2.5rem", padding: "1.5rem 2rem" }}>
+                  <h4 id="plan-info-title">Square Free</h4>
+                  <p id="plan-info-desc" style={{ fontSize: "0.9rem", marginBottom: 0, marginTop: "0.25rem" }}>Best for businesses that need the basic Square POS tools without a monthly software charge. Processing fees still apply.</p>
+                </div>
+
+                {/* Section 2: Hardware selection */}
+                <div className="calc-section-title">
+                  <div className="calc-section-num">2</div>
+                  <h4>Add Hardware (Financed Monthly)</h4>
+                </div>
+
+                <div className="calc-item">
+                  <div className="calc-item-info">
+                    <h4>Square Register (2nd gen)</h4>
+                    <p>High-volume desktop register with dedicated buyer terminal screen.</p>
+                    <div className="calc-item-meta">
+                      <span>$44/mo</span>
+                      <span>24 mo. term</span>
+                      <span>Register POS</span>
+                    </div>
+                  </div>
+                  <div className="calc-item-qty">
+                    <label>Qty</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={hardwareQty.register} 
+                      onChange={(e) => handleQtyChange("hardware", "register", e.target.value)}
+                    />
+                    <small>$44/mo</small>
+                  </div>
+                </div>
+
+                <div className="calc-item">
+                  <div className="calc-item-info">
+                    <h4>Square Handheld</h4>
+                    <p>Mobile checkout terminal. Table ordering, line busting, patio checkouts.</p>
+                    <div className="calc-item-meta">
+                      <span>$37/mo</span>
+                      <span>12 mo. term</span>
+                      <span>Mobile POS</span>
+                    </div>
+                  </div>
+                  <div className="calc-item-qty">
+                    <label>Qty</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={hardwareQty.handheld} 
+                      onChange={(e) => handleQtyChange("hardware", "handheld", e.target.value)}
+                    />
+                    <small>$37/mo</small>
+                  </div>
+                </div>
+
+                <div className="calc-item">
+                  <div className="calc-item-info">
+                    <h4>Square Terminal</h4>
+                    <p>Handheld chip card scanner and receipt printer in one unit.</p>
+                    <div className="calc-item-meta">
+                      <span>$27/mo</span>
+                      <span>12 mo. term</span>
+                      <span>Receipt POS</span>
+                    </div>
+                  </div>
+                  <div className="calc-item-qty">
+                    <label>Qty</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={hardwareQty.terminal} 
+                      onChange={(e) => handleQtyChange("hardware", "terminal", e.target.value)}
+                    />
+                    <small>$27/mo</small>
+                  </div>
+                </div>
+
+                <div className="calc-item">
+                  <div className="calc-item-info">
+                    <h4>Square Stand</h4>
+                    <p>Turn an iPad into a sleek countertop checkout screen.</p>
+                    <div className="calc-item-meta">
+                      <span>$14/mo</span>
+                      <span>12 mo. term</span>
+                      <span>iPad POS</span>
+                    </div>
+                  </div>
+                  <div className="calc-item-qty">
+                    <label>Qty</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={hardwareQty.stand} 
+                      onChange={(e) => handleQtyChange("hardware", "stand", e.target.value)}
+                    />
+                    <small>$14/mo</small>
+                  </div>
+                </div>
+
+                <div className="calc-item">
+                  <div className="calc-item-info">
+                    <h4>Square Kiosk Hardware</h4>
+                    <p>iPad wall/stand kiosk frame for self-ordering customer inputs.</p>
+                    <div className="calc-item-meta">
+                      <span>$14/mo</span>
+                      <span>12 mo. term</span>
+                      <span>Self Order</span>
+                    </div>
+                  </div>
+                  <div className="calc-item-qty">
+                    <label>Qty</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={hardwareQty.kioskHardware} 
+                      onChange={(e) => handleQtyChange("hardware", "kioskHardware", e.target.value)}
+                    />
+                    <small>$14/mo</small>
+                  </div>
+                </div>
+
+                <div className="calc-item">
+                  <div className="calc-item-info">
+                    <h4>Square Reader Contactless + Chip</h4>
+                    <p>Lightweight pocket scanner for cards/Apple Pay. Not financed.</p>
+                    <div className="calc-item-meta">
+                      <span>$59 One-time</span>
+                      <span>Not monthly</span>
+                      <span>Tap POS</span>
+                    </div>
+                  </div>
+                  <div className="calc-item-qty">
+                    <label>Qty</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={hardwareQty.reader} 
+                      onChange={(e) => handleQtyChange("hardware", "reader", e.target.value)}
+                    />
+                    <small>$59</small>
+                  </div>
+                </div>
+
+                {/* Section 3: Addon apps selection */}
+                <div className="calc-section-title">
+                  <div className="calc-section-num">3</div>
+                  <h4>Add-on App Devices (Plus/Premium plans only)</h4>
+                </div>
+
+                <div className="calc-item">
+                  <div className="calc-item-info">
+                    <h4>Square KDS (Kitchen Display System) App</h4>
+                    <p>Send orders digitally to back kitchen monitors. Cost is $30/device (Plus) or $20/device (Premium).</p>
+                    <div className="calc-item-meta">
+                      <span>Plus: $30/mo</span>
+                      <span>Premium: $20/mo</span>
+                      <span>Kitchen App</span>
+                    </div>
+                  </div>
+                  <div className="calc-item-qty">
+                    <label>Qty</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={addonQty.kds} 
+                      disabled={selectedPlan === "free"}
+                      onChange={(e) => handleQtyChange("addon", "kds", e.target.value)}
+                    />
+                    <small>Plan-based</small>
+                  </div>
+                </div>
+
+                <div className="calc-item">
+                  <div className="calc-item-info">
+                    <h4>Square Kiosk App Devices</h4>
+                    <p>Run ordering flows on your kiosk screens. Cost is $50/device (Plus) or $30/device (Premium).</p>
+                    <div className="calc-item-meta">
+                      <span>Plus: $50/mo</span>
+                      <span>Premium: $30/mo</span>
+                      <span>Kiosk App</span>
+                    </div>
+                  </div>
+                  <div className="calc-item-qty">
+                    <label>Qty</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={addonQty.kiosk} 
+                      disabled={selectedPlan === "free"}
+                      onChange={(e) => handleQtyChange("addon", "kiosk", e.target.value)}
+                    />
+                    <small>Plan-based</small>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary Box */}
+              <div className="summary-box">
+                <h3 className="summary-title">Estimate Summary</h3>
+                <div className="summary-row">
+                  <span>Locations:</span>
+                  <strong>{locations}</strong>
+                </div>
+                <div className="summary-row">
+                  <span>Plan Level:</span>
+                  <strong>{selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}</strong>
+                </div>
+                <div className="summary-row">
+                  <span>Software Monthly:</span>
+                  <strong>${planMonthly}/mo</strong>
+                </div>
+                <div className="summary-row">
+                  <span>Hardware Monthly:</span>
+                  <strong>${hardwareMonthly}/mo</strong>
+                </div>
+                <div className="summary-row">
+                  <span>KDS Software:</span>
+                  <strong>${kdsMonthly}/mo</strong>
+                </div>
+                <div className="summary-row">
+                  <span>Kiosk Software:</span>
+                  <strong>${kioskMonthly}/mo</strong>
+                </div>
+                <div className="summary-row">
+                  <span>One-time Hardware:</span>
+                  <strong>${onetimeTotal}</strong>
+                </div>
+                <div className="summary-row total">
+                  <span>Est. Total Monthly:</span>
+                  <strong>${totalMonthly}/mo</strong>
+                </div>
+
+                <div className="summary-details">
+                  <h5>Included Selections:</h5>
+                  <ul>
+                    {hardwareSummaryList.length === 0 ? (
+                      <li>No items selected yet.</li>
+                    ) : (
+                      hardwareSummaryList.map((item, idx) => <li key={idx}>{item}</li>)
+                    )}
+                  </ul>
+                </div>
+                
+                <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "1rem", lineHeight: "1.4" }}>Financing totals are estimates based on standard Square credit terms. Taxes, processing rates, and shipping fees not included. Final pricing is subject to Square approval.</p>
+
+                <button className="btn primary" style={{ width: "100%", marginTop: "1.5rem" }} onClick={applyQuoteToContact}>Request Final Quote</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* PAGE 5: SQUARE PLANS */}
+        <div className={`spa-page ${currentPage === "plans" ? "active" : ""}`} id="plans">
+          <section className="container">
+            <div className="section-header">
+              <span className="kicker">Compare Options</span>
+              <h2>Select Your Square Plan</h2>
+              <p>Choose the tier that fits your volume and scaling needs. Plus and Premium packages unlock advanced operations.</p>
+            </div>
+
+            <div className="plans-grid animate-on-scroll">
+              {/* Free */}
+              <div className="plan-card">
+                <h3 className="plan-name">Square Free</h3>
+                <div className="plan-price">$0<span>/location</span></div>
+                <p style={{ fontSize: "0.85rem", marginBottom: "1.5rem" }}>Core POS tools to get your business processing cards immediately.</p>
+                <ul>
+                  <li>Standard transaction checkout app</li>
+                  <li>Free Square online ordering page</li>
+                  <li>Invoicing and basic client profiles</li>
+                  <li>Multi-location inventory tracking</li>
+                  <li>Offline mode card payments</li>
+                </ul>
+                <button className="btn ghost" onClick={() => navigateTo("contact")}>Ask About Free</button>
+              </div>
+
+              {/* Plus */}
+              <div className="plan-card featured">
+                <span className="plan-featured-tag">Recommended</span>
+                <h3 className="plan-name">Square Plus</h3>
+                <div className="plan-price">$49<span>/location</span></div>
+                <p style={{ fontSize: "0.85rem", marginBottom: "1.5rem" }}>Advanced features and staff tools for active, scaling businesses.</p>
+                <ul>
+                  <li>Includes all features in Free</li>
+                  <li>Advanced inventory (COGS, vendor orders)</li>
+                  <li>Staff shift tracking & employee access levels</li>
+                  <li>Barcode scanner catalog configurations</li>
+                  <li>Unlocked KDS and Kiosk app add-ons</li>
+                  <li>Priority customer support access</li>
+                </ul>
+                <button className="btn primary" onClick={() => navigateTo("contact")}>Get Plus Config</button>
+              </div>
+
+              {/* Premium */}
+              <div className="plan-card">
+                <h3 className="plan-name">Square Premium</h3>
+                <div className="plan-price">Custom<span>/custom pricing</span></div>
+                <p style={{ fontSize: "0.85rem", marginBottom: "1.5rem" }}>For high-volume merchants processing over $250k/year.</p>
+                <ul>
+                  <li>Includes all features in Plus</li>
+                  <li>Lower negotiated transaction card rates</li>
+                  <li>Custom API integrations and API webhooks</li>
+                  <li>Dedicated Account Manager assigned</li>
+                  <li>24/7 emergency hotline priority lines</li>
+                  <li>Custom contract and hardware setups</li>
+                </ul>
+                <button className="btn ghost" onClick={() => navigateTo("contact")}>Contact For Premium</button>
+              </div>
+            </div>
+
+            <div className="official-note animate-on-scroll" style={{ marginTop: "4rem", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "2rem" }}>
+              <div style={{ maxWidth: "750px" }}>
+                <h4>High-Volume Processing?</h4>
+                <p style={{ fontSize: "0.9rem", marginBottom: 0 }}>If your business processes over $250,000 annually, you qualify for custom payment processing rates. Upload your merchant statement and Dominique will build a custom rate proposal.</p>
+              </div>
+              <button className="btn secondary" onClick={openUploadModal}>Upload Processing Statement</button>
+            </div>
+          </section>
+        </div>
+
+        {/* PAGE 6: CONTACT US */}
+        <div className={`spa-page ${currentPage === "contact" ? "active" : ""}`} id="contact">
+          <section className="container">
+            <div className="contact-grid">
+              <div className="contact-info-card">
+                <span className="kicker">Direct Contact</span>
+                <h2>Talk to Dominique</h2>
+                <p style={{ marginTop: "0.75rem" }}>Get direct, human support for your merchant onboarding. We do not use anonymous ticketing systems.</p>
+                
+                <div className="contact-meta-item">
+                  <div className="contact-meta-icon">
+                    <Phone size={18} />
+                  </div>
+                  <div className="contact-meta-content">
+                    <h4>Call / Text Direct</h4>
+                    <p>(612) 924-5404</p>
+                  </div>
+                </div>
+
+                <div className="contact-meta-item">
+                  <div className="contact-meta-icon">
+                    <Mail size={18} />
+                  </div>
+                  <div className="contact-meta-content">
+                    <h4>Email Address</h4>
+                    <p>procommercesolutions@gmail.com</p>
+                  </div>
+                </div>
+
+                <div className="contact-meta-item">
+                  <div className="contact-meta-icon">
+                    <User size={18} />
+                  </div>
+                  <div className="contact-meta-content">
+                    <h4>Lead Advisor</h4>
+                    <p>Dominique Wright, CEO</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Consultation Form */}
+              <div className="card" id="consultation-form">
+                <h3>Request a consultation</h3>
+                <p style={{ fontSize: "0.9rem", marginBottom: "2rem" }}>Provide your details below to schedule your consultation call.</p>
+                
+                {contactSubmitSuccess ? (
+                  <div style={{ textAlign: "center", padding: "2rem 0" }}>
+                    <div style={{ display: "inline-grid", placeItems: "center", width: "64px", height: "64px", borderRadius: "9999px", background: "var(--success-soft)", color: "var(--success)", marginBottom: "1rem" }}>
+                      <ShieldCheck size={36} />
+                    </div>
+                    <h3>Request Submitted Successfully!</h3>
+                    <p style={{ margin: "1rem 0 1.5rem", color: "var(--text-muted)", fontSize: "0.95rem" }}>Thank you for contacting Pro Commerce Solutions. Dominique will review your business information and reach out to you within 24 hours.</p>
+                    <button className="btn ghost small" onClick={() => setContactSubmitSuccess(false)}>Send Another Message</button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleContactSubmit}>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>First Name *</label>
+                        <input 
+                          type="text" 
+                          placeholder="First name" 
+                          required 
+                          value={contactForm.firstName} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, firstName: e.target.value }))}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Last Name *</label>
+                        <input 
+                          type="text" 
+                          placeholder="Last name" 
+                          required 
+                          value={contactForm.lastName} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, lastName: e.target.value }))}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Email Address *</label>
+                        <input 
+                          type="email" 
+                          placeholder="Email address" 
+                          required 
+                          value={contactForm.email} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Phone Number *</label>
+                        <input 
+                          type="tel" 
+                          placeholder="Phone number" 
+                          required 
+                          value={contactForm.phone} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Business Name *</label>
+                        <input 
+                          type="text" 
+                          placeholder="Business name" 
+                          required 
+                          value={contactForm.businessName} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, businessName: e.target.value }))}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Business Type</label>
+                        <select 
+                          value={contactForm.businessType} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, businessType: e.target.value }))}
+                        >
+                          <option value="Restaurant (table service)">Restaurant (table service)</option>
+                          <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                          <option value="Retail">Retail</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>Monthly Revenue ($)</label>
+                        <input 
+                          type="text" 
+                          placeholder="Monthly revenue" 
+                          value={contactForm.monthlyRevenue} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, monthlyRevenue: e.target.value }))}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Interested Plan</label>
+                        <select 
+                          value={contactForm.interestedPlan} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, interestedPlan: e.target.value }))}
+                        >
+                          <option value="free">Square Free</option>
+                          <option value="plus">Square Plus</option>
+                          <option value="premium">Square Premium / Custom</option>
+                        </select>
+                      </div>
+                      <div className="form-group full">
+                        <label>Consultation Notes / Selections</label>
+                        <textarea 
+                          rows="5" 
+                          placeholder="Let us know what hardware or workflow features you need help setting up..."
+                          value={contactForm.message} 
+                          onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+                        ></textarea>
+                      </div>
+                      
+                      <div className="form-group full">
+                        <label>Current Merchant Statement (Optional)</label>
+                        <div className="upload-area" onClick={() => document.getElementById("contact-file-input").click()}>
+                          <div className="upload-area-icon">
+                            <FileText size={32} />
+                          </div>
+                          <p>Drag your credit card processing statement here, or <strong>browse files</strong></p>
+                          <input 
+                            type="file" 
+                            id="contact-file-input" 
+                            style={{ display: "none" }} 
+                            onChange={(e) => handleFileChange(e, "contact")}
+                          />
+                          {contactForm.fileName && (
+                            <span className="upload-filename" style={{ display: "block" }}>
+                              {contactForm.fileName}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: "2rem", display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                      <button type="button" className="btn ghost" onClick={openUploadModal}>Upload Statement Only</button>
+                      <button type="submit" className="btn primary" disabled={loadingAction === "contact"}>
+                        {loadingAction === "contact" ? "Submitting..." : "Submit Request"}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer>
+        <div className="footer-top">
+          <div className="footer-brand">
+            <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap">
+              <div className="logo-text">
+                <span className="brand-title" style={{ color: "var(--white)" }}>PRO COMMERCE</span>
+                <span className="brand-sub">Authorized Square Reseller</span>
+              </div>
+            </div>
+            <p>Your trusted B2B partner for credit card processing, ATM placements, and official Square POS configuration consultations.</p>
+            <span className="tag">Authorized Reseller</span>
+          </div>
+          
+          <div className="footer-links">
+            <h4>Navigate Site</h4>
+            <ul>
+              <li><button onClick={() => navigateTo("home")}>Home Page</button></li>
+              <li><button onClick={() => navigateTo("about")}>About Us</button></li>
+              <li><button onClick={() => navigateTo("services")}>Our Services</button></li>
+              <li><button onClick={() => navigateTo("products")}>Square Hardware</button></li>
+              <li><button onClick={() => navigateTo("plans")}>Square Plans</button></li>
+              <li><button onClick={() => navigateTo("products", "calculator")}>Cost Calculator</button></li>
+              <li><button onClick={() => navigateTo("contact")}>Contact Us</button></li>
+            </ul>
+          </div>
+
+          <div className="footer-contact">
+            <h4>Direct Contact</h4>
+            <p><strong>Dominique Wright</strong><br />CEO, Pro Commerce Solutions</p>
+            <div className="footer-contact-item">
+              <Phone size={14} />
+              <span>(612) 924-5404</span>
+            </div>
+            <div className="footer-contact-item">
+              <Mail size={14} />
+              <span>procommercesolutions@gmail.com</span>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2026 Pro Commerce Solutions. Authorized reseller of Square products and services. All rights reserved.</p>
+        </div>
+      </footer>
+
+      {/* MODAL: SURVEY MODAL */}
+      <div className={`modal-overlay ${isSurveyOpen ? "show" : ""}`}>
+        <div className="modal-container">
+          <div className="modal-header">
+            <div>
+              <h3>Merchant Setup Survey</h3>
+              <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Configure your customized Square recommendation.</p>
+            </div>
+            <button className="modal-close" onClick={() => setIsSurveyOpen(false)}>&times;</button>
+          </div>
+          <div className="modal-body">
+            {surveySubmitSuccess ? (
+              <div style={{ textAlign: "center", padding: "3rem 0" }}>
+                <div style={{ display: "inline-grid", placeItems: "center", width: "64px", height: "64px", borderRadius: "9999px", background: "var(--success-soft)", color: "var(--success)", marginBottom: "1rem" }}>
+                  <ShieldCheck size={36} />
+                </div>
+                <h3>Survey Captured!</h3>
+                <p style={{ margin: "1rem 0 2rem", color: "var(--text-muted)" }}>Your information has been logged securely in our pipeline. Dominique Wright will evaluate your details and prepare custom POS recommendations.</p>
+                <div className="btn-row" style={{ justifyContent: "center" }}>
+                  <button className="btn primary" onClick={() => setIsSurveyOpen(false)}>Done</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="survey-progress">
+                  <div className={`survey-progress-step ${surveyStep >= 1 ? "active" : ""}`}></div>
+                  <div className={`survey-progress-step ${surveyStep >= 2 ? "active" : ""}`}></div>
+                  <div className={`survey-progress-step ${surveyStep >= 3 ? "active" : ""}`}></div>
+                </div>
+
+                <form onSubmit={handleSurveySubmit}>
+                  {/* Step 1 */}
+                  {surveyStep === 1 && (
+                    <div className="survey-step active">
+                      <h4 style={{ marginBottom: "1rem" }}>Step 1: Contact Information</h4>
+                      <div className="form-grid">
+                        <div className="form-group">
+                          <label>First Name *</label>
+                          <input 
+                            type="text" 
+                            placeholder="First name" 
+                            required 
+                            value={surveyForm.firstName}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, firstName: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Last Name *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Last name" 
+                            required 
+                            value={surveyForm.lastName}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, lastName: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Email Address *</label>
+                          <input 
+                            type="email" 
+                            placeholder="Email address" 
+                            required 
+                            value={surveyForm.email}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, email: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Phone Number *</label>
+                          <input 
+                            type="tel" 
+                            placeholder="Phone number" 
+                            required 
+                            value={surveyForm.phone}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, phone: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end" }}>
+                        <button type="button" className="btn primary" onClick={handleStepNext}>Next Step</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 2 */}
+                  {surveyStep === 2 && (
+                    <div className="survey-step active">
+                      <h4 style={{ marginBottom: "1rem" }}>Step 2: Business Workflows</h4>
+                      <div className="form-grid">
+                        <div className="form-group">
+                          <label>Business Type *</label>
+                          <select 
+                            value={surveyForm.businessType} 
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, businessType: e.target.value }))}
+                            required
+                          >
+                            <option value="Restaurant (table service)">Restaurant (table service)</option>
+                            <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                        <div className="form-group">
+                          <label>Industry *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Industry category" 
+                            required 
+                            value={surveyForm.industry}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, industry: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Monthly Revenue ($) *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Estimated revenue" 
+                            required 
+                            value={surveyForm.monthlyRevenue}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, monthlyRevenue: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Projected Volume ($) *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Projected monthly volume" 
+                            required 
+                            value={surveyForm.projectedVolume}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, projectedVolume: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ marginTop: "2rem", display: "flex", justifyContent: "space-between" }}>
+                        <button type="button" className="btn ghost" onClick={() => setSurveyStep(1)}>Previous</button>
+                        <button type="button" className="btn primary" onClick={handleStepNext}>Next Step</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3 */}
+                  {surveyStep === 3 && (
+                    <div className="survey-step active">
+                      <h4 style={{ marginBottom: "1rem" }}>Step 3: Registration details</h4>
+                      <div className="form-grid">
+                        <div className="form-group">
+                          <label>Merchant DBA *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Doing Business As name" 
+                            required 
+                            value={surveyForm.dbaName}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, dbaName: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Legal Business Name *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Legal registered entity name" 
+                            required 
+                            value={surveyForm.legalName}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, legalName: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group full">
+                          <label>Street Address *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Business street address" 
+                            required 
+                            value={surveyForm.streetAddress}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, streetAddress: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>City *</label>
+                          <input 
+                            type="text" 
+                            placeholder="City" 
+                            required 
+                            value={surveyForm.city}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, city: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>State *</label>
+                          <input 
+                            type="text" 
+                            placeholder="State" 
+                            required 
+                            value={surveyForm.state}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, state: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Zip *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Zip code" 
+                            required 
+                            value={surveyForm.zipCode}
+                            onChange={(e) => setSurveyForm(prev => ({ ...prev, zipCode: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group full">
+                          <label>Processing Statement (Optional)</label>
+                          <div className="upload-area" onClick={() => document.getElementById("survey-file-input").click()}>
+                            <div className="upload-area-icon">
+                              <FileText size={32} />
+                            </div>
+                            <p>Drag file here or <strong>browse files</strong> to upload statement</p>
+                            <input 
+                              type="file" 
+                              id="survey-file-input" 
+                              style={{ display: "none" }} 
+                              onChange={(e) => handleFileChange(e, "survey")}
+                            />
+                            {surveyForm.fileName && (
+                              <span className="upload-filename" style={{ display: "block" }}>
+                                {surveyForm.fileName}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: "2rem", display: "flex", justifyContent: "space-between" }}>
+                        <button type="button" className="btn ghost" onClick={() => setSurveyStep(2)}>Previous</button>
+                        <button type="submit" className="btn primary" disabled={loadingAction === "survey"}>
+                          {loadingAction === "survey" ? "Submitting..." : "Submit Survey"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* MODAL: UPLOAD STATEMENT */}
+      <div className={`modal-overlay ${isUploadOpen ? "show" : ""}`}>
+        <div className="modal-container" style={{ maxWidth: "600px" }}>
+          <div className="modal-header">
+            <div>
+              <h3>Upload Statement</h3>
+              <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Upload your recent processing statement for rates comparison.</p>
+            </div>
+            <button className="modal-close" onClick={() => setIsUploadOpen(false)}>&times;</button>
+          </div>
+          <div className="modal-body">
+            {uploadSubmitSuccess ? (
+              <div style={{ textAlign: "center", padding: "3rem 0" }}>
+                <div style={{ display: "inline-grid", placeItems: "center", width: "64px", height: "64px", borderRadius: "9999px", background: "var(--success-soft)", color: "var(--success)", marginBottom: "1rem" }}>
+                  <ShieldCheck size={36} />
+                </div>
+                <h3>Statement Uploaded Privately</h3>
+                <p style={{ margin: "1rem 0 2rem", color: "var(--text-muted)" }}>Your merchant statements have been stored securely in our private drive for analysis. Dominique Wright will build your customized savings estimate.</p>
+                <div className="btn-row" style={{ justifyContent: "center" }}>
+                  <button className="btn primary" onClick={() => setIsUploadOpen(false)}>Done</button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleUploadSubmit}>
+                <div className="form-grid single">
+                  <div className="form-group">
+                    <label>Business Name *</label>
+                    <input 
+                      type="text" 
+                      placeholder="Your business name" 
+                      required 
+                      value={uploadForm.businessName}
+                      onChange={(e) => setUploadForm(prev => ({ ...prev, businessName: e.target.value }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Email Address *</label>
+                    <input 
+                      type="email" 
+                      placeholder="Your email address" 
+                      required 
+                      value={uploadForm.email}
+                      onChange={(e) => setUploadForm(prev => ({ ...prev, email: e.target.value }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Current Processor *</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Clover, Toast, Chase Paymentech" 
+                      required 
+                      value={uploadForm.currentProcessor}
+                      onChange={(e) => setUploadForm(prev => ({ ...prev, currentProcessor: e.target.value }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Upload Statement File *</label>
+                    <div className="upload-area" onClick={() => document.getElementById("modal-file-input").click()}>
+                      <div className="upload-area-icon">
+                        <FileText size={32} />
+                      </div>
+                      <p>Drag statement file here or <strong>browse files</strong></p>
+                      <input 
+                        type="file" 
+                        id="modal-file-input" 
+                        style={{ display: "none" }} 
+                        required 
+                        onChange={(e) => handleFileChange(e, "upload")}
+                      />
+                      {uploadForm.fileName && (
+                        <span className="upload-filename" style={{ display: "block" }}>
+                          {uploadForm.fileName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "1rem", lineHeight: "1.4" }}><strong>Privacy note:</strong> Your credit card processing statement contains sensitive business identifiers and volume details. Files are uploaded directly to our secure private folder.</p>
+                <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+                  <button type="button" className="btn ghost" onClick={() => setIsUploadOpen(false)}>Cancel</button>
+                  <button type="submit" className="btn primary" disabled={loadingAction === "upload"}>
+                    {loadingAction === "upload" ? "Submitting..." : "Submit Statement"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* CHATBOT ASSISTANT */}
+      <div className="chat-widget">
+        <div className={`chat-panel ${isChatOpen ? "show" : ""}`}>
+          <div className="chat-head">
+            <h4>Pro Commerce Solutions</h4>
+            <button className="modal-close" style={{ color: "var(--white)" }} onClick={() => setIsChatOpen(false)}>&times;</button>
+          </div>
+          <div className="chat-body" id="chat-body" ref={chatBodyRef}>
+            {chatMessages.map((msg, idx) => (
+              <div key={idx} className={`chat-msg ${msg.sender === "bot" ? "bot" : "user"}`}>
+                {msg.text}
+              </div>
+            ))}
+            
+            {/* Typing Indicator */}
+            {isBotTyping && (
+              <div className="chat-msg bot" style={{ fontStyle: "italic", opacity: 0.7 }}>
+                Typing...
+              </div>
+            )}
+            
+            {!isBotTyping && chatMessages[chatMessages.length - 1].sender === "bot" && (
+              <div className="chat-quick-replies">
+                <button className="chat-quick-btn" onClick={() => chatReply("I need a Square POS system")}>Square POS System</button>
+                <button className="chat-quick-btn" onClick={() => chatReply("I want hardware pricing")}>Hardware Pricing</button>
+                <button className="chat-quick-btn" onClick={() => chatReply("I run a restaurant")}>Restaurant POS</button>
+                <button className="chat-quick-btn" onClick={() => chatReply("I want to upload a statement")}>Compare Rates</button>
+              </div>
+            )}
+          </div>
+          <div className="chat-foot">
+            <input 
+              type="text" 
+              placeholder="Type a message..." 
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
+            />
+            <button onClick={sendChatMessage} aria-label="Send message">
+              <Send size={16} />
+            </button>
+          </div>
+        </div>
+        <button className="chat-bubble" onClick={() => setIsChatOpen(!isChatOpen)} aria-label="Open Chat Assistant">
+          <Sparkles size={24} />
+        </button>
+      </div>
+    </>
+  );
+}
