@@ -45,6 +45,10 @@ export default function Home() {
   const [activeProductDetail, setActiveProductDetail] = useState(null);
   const [surveyStep, setSurveyStep] = useState(1);
 
+  // Welcome lead-capture popup (opens on first load)
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
+  const [welcomeSubmitted, setWelcomeSubmitted] = useState(false);
+
   // Form Submissions states
   const [surveySubmitSuccess, setSurveySubmitSuccess] = useState(false);
   const [uploadSubmitSuccess, setUploadSubmitSuccess] = useState(false);
@@ -145,7 +149,7 @@ export default function Home() {
 
   // Trust marquee strip items
   const trustItems = [
-    "Authorized Square Reseller",
+    "Authorized Square Dealer",
     "Credit Card Processing",
     "POS Consultation",
     "Statement Reviews",
@@ -169,12 +173,17 @@ export default function Home() {
 
       if (sectionId) {
         window.scrollTo({ top: 0, behavior: "instant" });
-        setTimeout(() => {
+        // Retry until the destination section has rendered (page switch may lag a frame)
+        let tries = 0;
+        const tryScroll = () => {
           const section = document.getElementById(sectionId);
           if (section) {
             section.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else if (tries++ < 20) {
+            setTimeout(tryScroll, 80);
           }
-        }, 150);
+        };
+        setTimeout(tryScroll, 120);
       } else {
         window.scrollTo({ top: 0, behavior: "instant" });
       }
@@ -289,6 +298,30 @@ export default function Home() {
     }
   }, [chatMessages, isBotTyping]);
 
+  // --- WELCOME POPUP ON FIRST LOAD (once per browser session) ---
+  useEffect(() => {
+    let seen = false;
+    try { seen = window.sessionStorage.getItem("pc_welcome_seen") === "1"; } catch { seen = false; }
+    if (seen) return;
+    const t = setTimeout(() => setIsWelcomeOpen(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  const closeWelcome = () => {
+    setIsWelcomeOpen(false);
+    try { window.sessionStorage.setItem("pc_welcome_seen", "1"); } catch {}
+  };
+
+  const handleWelcomeSubmit = (e) => {
+    e.preventDefault();
+    setLoadingAction("welcome");
+    setTimeout(() => {
+      setLoadingAction(null);
+      setWelcomeSubmitted(true);
+      try { window.sessionStorage.setItem("pc_welcome_seen", "1"); } catch {}
+    }, 1000);
+  };
+
   // --- INTERACTION HELPER LINKS ---
   const navigateTo = (pageId, sectionId = null) => {
     const sectionPart = sectionId ? "/" + sectionId : "";
@@ -297,10 +330,18 @@ export default function Home() {
 
   // --- CALCULATOR TOTALS COMPUTATION ---
   const planMonthly = pricingMatrix.plans[selectedPlan] * locations;
-  
+
   let hardwareMonthly = 0;
   let onetimeTotal = 0;
-  const hardwareSummaryList = [];
+  // Detailed "what this setup includes" lines (prototype-style breakdown)
+  const setupIncludes = [];
+
+  // Software line
+  if (pricingMatrix.plans[selectedPlan] > 0) {
+    setupIncludes.push(`${pricingMatrix.plansLabels[selectedPlan]} software — $${pricingMatrix.plans[selectedPlan]}/mo × ${locations} location${locations > 1 ? "s" : ""} = $${planMonthly}/mo`);
+  } else {
+    setupIncludes.push(`${pricingMatrix.plansLabels[selectedPlan]} software — $0/mo (processing fees apply) × ${locations} location${locations > 1 ? "s" : ""}`);
+  }
 
   Object.keys(hardwareQty).forEach(key => {
     const qty = hardwareQty[key];
@@ -309,10 +350,10 @@ export default function Home() {
     const cost = config.price * qty;
     if (config.onetime) {
       onetimeTotal += cost;
-      hardwareSummaryList.push(`${config.name} × ${qty} ($${cost} one-time)`);
+      setupIncludes.push(`${qty} × ${config.name} — $${cost} one-time payment`);
     } else {
       hardwareMonthly += cost;
-      hardwareSummaryList.push(`${config.name} × ${qty} ($${cost}/mo over ${config.term})`);
+      setupIncludes.push(`${qty} × ${config.name} — $${cost}/mo financed over ${config.term} (est.)`);
     }
   });
 
@@ -321,8 +362,8 @@ export default function Home() {
   const kdsMonthly = selectedPlan === "free" ? 0 : pricingMatrix.addons.kds[selectedPlan] * kdsQty;
   const kioskMonthly = selectedPlan === "free" ? 0 : pricingMatrix.addons.kiosk[selectedPlan] * kioskQty;
 
-  if (kdsQty > 0) hardwareSummaryList.push(`Square KDS App Devices × ${kdsQty} ($${kdsMonthly}/mo)`);
-  if (kioskQty > 0) hardwareSummaryList.push(`Square Kiosk App Devices × ${kioskQty} ($${kioskMonthly}/mo)`);
+  if (kdsQty > 0) setupIncludes.push(`${kdsQty} × Square KDS app device — $${pricingMatrix.addons.kds[selectedPlan]}/mo each = $${kdsMonthly}/mo`);
+  if (kioskQty > 0) setupIncludes.push(`${kioskQty} × Square Kiosk app device — $${pricingMatrix.addons.kiosk[selectedPlan]}/mo each = $${kioskMonthly}/mo`);
 
   const totalMonthly = planMonthly + hardwareMonthly + kdsMonthly + kioskMonthly;
 
@@ -330,6 +371,9 @@ export default function Home() {
     const parsed = parseInt(val, 10);
     setLocations(isNaN(parsed) || parsed < 1 ? 1 : parsed);
   };
+
+  // Stepper for locations (+/-)
+  const bumpLocations = (delta) => setLocations(prev => Math.max(1, Math.min(99, prev + delta)));
 
   const changePlan = (plan) => {
     if (pricingMatrix.plans[plan] !== undefined) {
@@ -346,17 +390,19 @@ export default function Home() {
     }
   };
 
-  // "Request Final Quote" ->Prefills contact form and navigates there
-  const applyQuoteToContact = () => {
-    const items = [];
-    Object.keys(hardwareQty).forEach(key => {
-      const qty = hardwareQty[key];
-      if (qty > 0) items.push(`${pricingMatrix.hardware[key].name} (Qty: ${qty})`);
-    });
-    if (kdsQty > 0) items.push(`Square KDS App Devices (Qty: ${kdsQty})`);
-    if (kioskQty > 0) items.push(`Square Kiosk App Devices (Qty: ${kioskQty})`);
+  // Stepper for hardware / add-on quantities (+/-)
+  const bumpQty = (type, key, delta) => {
+    if (type === "hardware") {
+      setHardwareQty(prev => ({ ...prev, [key]: Math.max(0, Math.min(99, prev[key] + delta)) }));
+    } else {
+      if (selectedPlan === "free") return;
+      setAddonQty(prev => ({ ...prev, [key]: Math.max(0, Math.min(99, prev[key] + delta)) }));
+    }
+  };
 
-    const summaryText = `Hello Dominique,\n\nI estimated my monthly Square setup via the calculator and would like a quote. Here is my setup:\n- Locations: ${locations}\n- Software Plan: ${pricingMatrix.plansLabels[selectedPlan]}\n- Selected Hardware/Apps:\n  ${items.length > 0 ? items.join('\n  ') : 'None selected'}\n- Est. Total Monthly: $${totalMonthly}/mo\n- One-time Cost: $${onetimeTotal}\n\nPlease review and let me know the next steps.`;
+  // "Request Final Quote" -> prefills contact form and navigates there
+  const applyQuoteToContact = () => {
+    const summaryText = `Hello Pro Commerce Solutions team,\n\nI used the cost calculator and would like a final quote. Here is my setup:\n- Locations: ${locations}\n- Software plan: ${pricingMatrix.plansLabels[selectedPlan]}\n- What this setup includes:\n  ${setupIncludes.join("\n  ")}\n- Estimated total monthly: $${totalMonthly}/mo\n- One-time hardware: $${onetimeTotal}\n\nPlease review and let me know the next steps.`;
 
     setContactForm(prev => ({
       ...prev,
@@ -451,6 +497,62 @@ export default function Home() {
         "Stand: Optional dock accessory available for countertop setups"
       ],
       bestFor: "Mobile vendors, service contractors, taxi drivers, and entry-level merchants."
+    },
+    standMount: {
+      name: "Square Stand Mount",
+      price: "$149 one-time payment",
+      url: "https://squareup.com/us/en/hardware/stand-mount",
+      desc: "Low-profile countertop mount that locks an iPad in place for a clean, fixed checkout. Pairs with a Square reader for payments.",
+      specs: [
+        "iPad compatibility: Secures most current-generation iPad models",
+        "Design: Low-profile, fixed-angle mount for a tidy counter",
+        "Payments: Use with Square Reader for contactless + chip",
+        "Cable management: Built-in routing for power and accessories",
+        "Mounting: Optional VESA / wall-mount accessory available"
+      ],
+      bestFor: "Cafes, boutiques, and counters that want a permanent, low-profile iPad checkout."
+    },
+    dock: {
+      name: "Square Dock for Square Handheld",
+      price: "$99 one-time payment",
+      url: "https://squareup.com/us/en/hardware/handheld",
+      desc: "Charging dock that turns the Square Handheld into a stationary countertop terminal between mobile shifts.",
+      specs: [
+        "Compatibility: Designed for the Square Handheld device",
+        "Charging: Continuous charging while docked",
+        "Design: Weighted base for stable one-handed dips and taps",
+        "Connectivity: Keeps the device ready on Wi-Fi",
+        "Use: Switch between countertop and mobile service instantly"
+      ],
+      bestFor: "Businesses that run the Handheld both tableside and as a fixed register."
+    },
+    magReader: {
+      name: "Square Reader for Magstripe",
+      price: "$10 one-time payment",
+      url: "https://squareup.com/us/en/hardware/reader",
+      desc: "Ultra-affordable swipe reader that plugs into a phone or tablet headset jack for quick magstripe card payments.",
+      specs: [
+        "Connectivity: Plugs into a 3.5mm headset jack (adapter for newer devices)",
+        "Payments: Magstripe swipe cards",
+        "Size: Pocket-sized and lightweight",
+        "Power: No charging required — draws from the device",
+        "Backup: A handy spare for any mobile setup"
+      ],
+      bestFor: "Entry-level sellers, markets, and backup swipe payments on the go."
+    },
+    accessories: {
+      name: "Square Accessories Kit",
+      price: "From $89 one-time payment",
+      url: "https://squareup.com/us/en/hardware/accessories",
+      desc: "Receipt printers, cash drawers, barcode scanners, and kitchen printers that complete a full countertop or kitchen setup.",
+      specs: [
+        "Receipt printers: Thermal and impact (kitchen) options",
+        "Cash drawers: Heavy-duty drawers that trigger on sale",
+        "Barcode scanners: 1D/2D handheld and hands-free scanners",
+        "Kitchen printers: Send tickets to the line via KDS or paper",
+        "Compatibility: Works with Square Register, Stand, and Terminal"
+      ],
+      bestFor: "Retailers and restaurants building out a complete countertop or kitchen station."
     }
   };
 
@@ -618,11 +720,9 @@ export default function Home() {
       <header className={`topbar ${scrolled ? "scrolled" : ""}`}>
         <div className="topbar-inner">
           <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap">
-            <Image src="/Logo.jpg" alt="Pro Commerce Solutions Logo" width={48} height={48} className="logo-img" />
-            <div className="logo-text">
-              <span className="brand-title">PRO COMMERCE</span>
-              <span className="brand-sub">Authorized Square Reseller</span>
-            </div>
+            <Image src="/Logo.png" alt="Pro Commerce Solutions" width={150} height={59} className="logo-img" priority />
+            <span className="logo-divider"></span>
+            <span className="logo-tagline">Authorized<br />Square Dealer</span>
           </div>
 
           <button 
@@ -643,7 +743,7 @@ export default function Home() {
               <button className={`nav-item ${currentPage === "products" && currentSection === "calculator" ? "active" : ""}`} onClick={() => navigateTo("products", "calculator")}>Cost Calculator</button>
               <button className={`nav-item ${currentPage === "contact" ? "active" : ""}`} onClick={() => navigateTo("contact")}>Contact Us</button>
             </div>
-            <button className="btn primary small" onClick={openSurvey}>Get Started</button>
+            <button className="btn primary nav-cta" onClick={openSurvey}>Get Started</button>
           </nav>
         </div>
       </header>
@@ -664,7 +764,7 @@ export default function Home() {
             <div className="hero-wrap">
               <div className="hero-text">
                 <div className="hero-badge">
-                  <span className="dot"></span>Authorized Square Reseller
+                  <span className="dot"></span>Authorized Square Dealer
                 </div>
                 <h1 className="hero-title">
                   <span className="line">Payments &amp; POS,</span>
@@ -834,9 +934,10 @@ export default function Home() {
                 <span className="kicker">Our Journey</span>
                 <h2>About Pro Commerce Solutions</h2>
                 <div className="story-text">
-                  <p>Welcome to Pro Commerce Solutions, your trusted partner in modern payment processing. We specialize in credit card processing, ATM machines, and state-of-the-art POS systems tailored specifically for small businesses.</p>
-                  <p>Our mission is to revolutionize the way small businesses manage transactions by introducing innovative and trending solutions designed for the black business community. At Pro Commerce Solutions, we understand the unique challenges faced by entrepreneurs in our community. We are dedicated to empowering small businesses with the latest technology and personalized support they need to thrive in today’s fast-paced digital economy.</p>
-                  <p>Our team of experts is passionate about fostering growth and sustainability, ensuring that every client receives the guidance necessary to navigate the world of payment solutions. We pride ourselves on being at the forefront of payment processing, streamlining transactions while enhancing the customer experience. Join us at Pro Commerce Solutions as we pave the way for a brighter, more prosperous future for small businesses. Together, we can drive change and create lasting impact.</p>
+                  <p>Welcome to Pro Commerce Solutions, your trusted partner in modern payment processing. We specialize in credit card processing, ATM machines, and state-of-the-art POS systems tailored specifically for small businesses. We focus on helping small businesses simplify how they accept payments, manage transactions, and prepare for long-term growth using Square-powered solutions.</p>
+                  <p>Our mission is to revolutionize the way small businesses manage transactions by introducing innovative and trending solutions designed for the black business community. We understand the unique challenges faced by entrepreneurs in our community, and we are dedicated to empowering them with the latest technology and personalized support they need to thrive in today’s fast-paced digital economy.</p>
+                  <p>We understand that every business operates differently. A dine-in restaurant may need kitchen coordination and table-service tools. A fast-service concept may need speed, kiosks, and efficient checkout. A retail store may need strong front-counter flows, customer payments, and hardware that fits daily operations.</p>
+                  <p>That is why Dominique works as a practical advisor — not just a salesperson. We help business owners understand their options, choose the right setup, and move through onboarding with clarity and confidence — fostering growth, sustainability, and lasting impact for the community we serve.</p>
                 </div>
                 <div className="hero-actions" style={{ marginTop: "2rem" }}>
                   <button className="btn primary" onClick={() => navigateTo("contact")}>Request a Consultation</button>
@@ -948,7 +1049,7 @@ export default function Home() {
                   <Zap size={24} />
                 </div>
                 <h3>Square Onboarding</h3>
-                <p>Ready to sign up? As an Authorized Reseller, we provide a direct link for faster profile creation and onboarding support.</p>
+                <p>Ready to sign up? As an Authorized Dealer, we provide a direct link for faster profile creation and onboarding support.</p>
                 <button className="btn primary small" style={{ marginTop: "1rem" }} onClick={() => window.open("https://squareup.com/i/5AC21678BF", "_blank")}>Start Onboarding</button>
               </div>
             </div>
@@ -1077,6 +1178,74 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+
+              {/* Stand Mount */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Stand Mount visual"><rect x="95" y="30" width="170" height="104" rx="16" fill="#2F3438"/><rect x="114" y="48" width="132" height="68" rx="9" fill="#EAF6FD"/><rect x="150" y="132" width="60" height="14" rx="6" fill="#2F3438"/><path d="M120 150h120" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/><circle cx="180" cy="82" r="11" fill="#50A8D8"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Square Stand Mount</h3>
+                  <p>Low-profile countertop mount that locks an iPad in place for a clean, fixed checkout station.</p>
+                  <div className="price-line"><strong>$149 one-time payment</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.standMount)}>View Specs</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dock for Handheld */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Dock for Handheld visual"><rect x="138" y="20" width="84" height="118" rx="20" fill="#2F3438"/><rect x="151" y="38" width="58" height="62" rx="8" fill="#EAF6FD"/><circle cx="180" cy="118" r="10" fill="#50A8D8"/><rect x="120" y="138" width="120" height="20" rx="9" fill="#C4CCD6"/><path d="M150 158h60" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Square Dock for Handheld</h3>
+                  <p>Charging dock that turns the Square Handheld into a stationary countertop terminal between mobile shifts.</p>
+                  <div className="price-line"><strong>$99 one-time payment</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.dock)}>View Specs</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Magstripe Reader */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Reader for magstripe visual"><rect x="150" y="40" width="60" height="60" rx="10" fill="#2F3438"/><rect x="172" y="100" width="16" height="40" rx="6" fill="#2F3438"/><path d="M165 70h30" stroke="#50A8D8" strokeWidth="8" strokeLinecap="round"/><path d="M118 150h124" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Reader for Magstripe</h3>
+                  <p>Ultra-affordable swipe reader that plugs into a phone or tablet for quick magstripe card payments.</p>
+                  <div className="price-line"><strong>$10 one-time payment</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.magReader)}>View Specs</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Accessories */}
+              <div className="hardware-card">
+                <div className="device-visual">
+                  <span className="official-badge">Official Hardware</span>
+                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Accessories visual"><rect x="60" y="60" width="86" height="80" rx="10" fill="#2F3438"/><rect x="74" y="76" width="58" height="22" rx="4" fill="#EAF6FD"/><rect x="206" y="84" width="96" height="56" rx="10" fill="#FFFFFF" stroke="#2F3438" strokeWidth="8"/><rect x="222" y="100" width="64" height="10" rx="5" fill="#50A8D8"/><path d="M70 150h220" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                </div>
+                <div className="hardware-body">
+                  <h3>Accessories Kit</h3>
+                  <p>Receipt printers, cash drawers, barcode scanners, and kitchen printers to complete your countertop or kitchen setup.</p>
+                  <div className="price-line"><strong>From $89 one-time payment</strong></div>
+                  <div className="square-links">
+                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.accessories)}>View Specs</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -1092,232 +1261,122 @@ export default function Home() {
               <div>
                 {/* Section 1 */}
                 <div className="calc-panel">
-                <div className="calc-section-title">
-                  <div className="calc-section-num">1</div>
-                  <h4>Locations &amp; software plan</h4>
-                </div>
-
-                <div className="calc-form-row">
-                  <div className="form-group">
-                    <label>Number of Locations</label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      value={locations} 
-                      onChange={(e) => changeLocations(e.target.value)} 
-                      onKeyUp={(e) => changeLocations(e.target.value)}
-                    />
+                  <div className="calc-section-title">
+                    <div className="calc-section-num">1</div>
+                    <h4>Locations &amp; software plan</h4>
                   </div>
-                  <div className="form-group">
-                    <label>Square Software Plan</label>
-                    <select value={selectedPlan} onChange={(e) => changePlan(e.target.value)}>
-                      <option value="free">Square Free — $0/location</option>
-                      <option value="plus">Square Plus — $49/location</option>
-                      <option value="premium">Square Premium — $149/location</option>
-                    </select>
-                  </div>
-                </div>
 
-                <div className="plan-info-note">
-                  <h4>{planInfo[selectedPlan].title}</h4>
-                  <p>{planInfo[selectedPlan].desc}</p>
-                </div>
+                  <div className="calc-controls-row">
+                    <div className="calc-control">
+                      <label>Number of locations</label>
+                      <div className="loc-stepper">
+                        <button type="button" onClick={() => bumpLocations(-1)} aria-label="Decrease locations">−</button>
+                        <span>{locations}</span>
+                        <button type="button" onClick={() => bumpLocations(1)} aria-label="Increase locations">+</button>
+                      </div>
+                    </div>
+                    <div className="calc-control grow">
+                      <label>Square software plan</label>
+                      <div className="seg-control">
+                        {["free", "plus", "premium"].map(p => (
+                          <button
+                            type="button"
+                            key={p}
+                            className={selectedPlan === p ? "active" : ""}
+                            onClick={() => changePlan(p)}
+                          >
+                            {pricingMatrix.plansLabels[p].replace("Square ", "")}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="plan-info-note">
+                    <h4>{planInfo[selectedPlan].title}</h4>
+                    <p>{planInfo[selectedPlan].desc}</p>
+                  </div>
                 </div>{/* /panel 1 */}
 
                 {/* Section 2 */}
                 <div className="calc-panel">
-                <div className="calc-section-title">
-                  <div className="calc-section-num">2</div>
-                  <h4>Add hardware <span style={{ fontWeight: 400, color: "var(--text-faint)", fontSize: "0.85rem" }}>(financed monthly)</span></h4>
-                </div>
+                  <div className="calc-section-title">
+                    <div className="calc-section-num">2</div>
+                    <h4>Add hardware <span style={{ fontWeight: 400, color: "var(--text-faint)", fontSize: "0.85rem" }}>(financed monthly)</span></h4>
+                  </div>
 
-                <div className="calc-item">
-                  <div className="calc-item-info">
-                    <h4>Square Register (2nd gen)</h4>
-                    <p>High-volume desktop register with dedicated buyer terminal screen.</p>
-                    <div className="calc-item-meta">
-                      <span>$44/mo</span>
-                      <span>24 mo. term</span>
-                      <span>Register POS</span>
-                    </div>
-                  </div>
-                  <div className="calc-item-qty">
-                    <label>Qty</label>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      value={hardwareQty.register} 
-                      onChange={(e) => handleQtyChange("hardware", "register", e.target.value)}
-                    />
-                    <small>$44/mo</small>
-                  </div>
-                </div>
-
-                <div className="calc-item">
-                  <div className="calc-item-info">
-                    <h4>Square Handheld</h4>
-                    <p>Mobile checkout terminal. Table ordering, line busting, patio checkouts.</p>
-                    <div className="calc-item-meta">
-                      <span>$37/mo</span>
-                      <span>12 mo. term</span>
-                      <span>Mobile POS</span>
-                    </div>
-                  </div>
-                  <div className="calc-item-qty">
-                    <label>Qty</label>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      value={hardwareQty.handheld} 
-                      onChange={(e) => handleQtyChange("hardware", "handheld", e.target.value)}
-                    />
-                    <small>$37/mo</small>
-                  </div>
-                </div>
-
-                <div className="calc-item">
-                  <div className="calc-item-info">
-                    <h4>Square Terminal</h4>
-                    <p>Handheld chip card scanner and receipt printer in one unit.</p>
-                    <div className="calc-item-meta">
-                      <span>$27/mo</span>
-                      <span>12 mo. term</span>
-                      <span>Receipt POS</span>
-                    </div>
-                  </div>
-                  <div className="calc-item-qty">
-                    <label>Qty</label>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      value={hardwareQty.terminal} 
-                      onChange={(e) => handleQtyChange("hardware", "terminal", e.target.value)}
-                    />
-                    <small>$27/mo</small>
-                  </div>
-                </div>
-
-                <div className="calc-item">
-                  <div className="calc-item-info">
-                    <h4>Square Stand</h4>
-                    <p>Turn an iPad into a sleek countertop checkout screen.</p>
-                    <div className="calc-item-meta">
-                      <span>$14/mo</span>
-                      <span>12 mo. term</span>
-                      <span>iPad POS</span>
-                    </div>
-                  </div>
-                  <div className="calc-item-qty">
-                    <label>Qty</label>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      value={hardwareQty.stand} 
-                      onChange={(e) => handleQtyChange("hardware", "stand", e.target.value)}
-                    />
-                    <small>$14/mo</small>
-                  </div>
-                </div>
-
-                <div className="calc-item">
-                  <div className="calc-item-info">
-                    <h4>Square Kiosk Hardware</h4>
-                    <p>iPad wall/stand kiosk frame for self-ordering customer inputs.</p>
-                    <div className="calc-item-meta">
-                      <span>$14/mo</span>
-                      <span>12 mo. term</span>
-                      <span>Self Order</span>
-                    </div>
-                  </div>
-                  <div className="calc-item-qty">
-                    <label>Qty</label>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      value={hardwareQty.kioskHardware} 
-                      onChange={(e) => handleQtyChange("hardware", "kioskHardware", e.target.value)}
-                    />
-                    <small>$14/mo</small>
-                  </div>
-                </div>
-
-                <div className="calc-item">
-                  <div className="calc-item-info">
-                    <h4>Square Reader Contactless + Chip</h4>
-                    <p>Lightweight pocket scanner for cards/Apple Pay. Not financed.</p>
-                    <div className="calc-item-meta">
-                      <span>$59 One-time</span>
-                      <span>Not monthly</span>
-                      <span>Tap POS</span>
-                    </div>
-                  </div>
-                  <div className="calc-item-qty">
-                    <label>Qty</label>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      value={hardwareQty.reader} 
-                      onChange={(e) => handleQtyChange("hardware", "reader", e.target.value)}
-                    />
-                    <small>$59</small>
-                  </div>
-                </div>
-
+                  {[
+                    { key: "register", name: "Square Register (2nd gen)", desc: "High-volume desktop register with a dedicated buyer-facing screen." },
+                    { key: "handheld", name: "Square Handheld", desc: "Mobile checkout terminal — table ordering, line busting, patio." },
+                    { key: "terminal", name: "Square Terminal", desc: "All-in-one chip card device with a built-in receipt printer." },
+                    { key: "stand", name: "Square Stand", desc: "Turns an iPad into a sleek countertop checkout screen." },
+                    { key: "kioskHardware", name: "Square Kiosk Hardware", desc: "iPad wall/stand kiosk frame for self-ordering customers." },
+                    { key: "reader", name: "Square Reader (Contactless + Chip)", desc: "Pocket card reader for cards and Apple Pay — one-time, not financed." }
+                  ].map(it => {
+                    const cfg = pricingMatrix.hardware[it.key];
+                    const qty = hardwareQty[it.key];
+                    const line = cfg.price * qty;
+                    return (
+                      <div className="calc-item" key={it.key}>
+                        <div className="calc-item-info">
+                          <h4>{it.name}</h4>
+                          <p>{it.desc}</p>
+                          <div className="calc-item-meta">
+                            {cfg.onetime
+                              ? <><span>${cfg.price} one-time</span><span>Not financed</span></>
+                              : <><span>${cfg.price}/mo</span><span>{cfg.term} financing</span></>}
+                          </div>
+                        </div>
+                        <div className="qty-stepper">
+                          <button type="button" onClick={() => bumpQty("hardware", it.key, -1)} aria-label={`Decrease ${it.name}`}>−</button>
+                          <span>{qty}</span>
+                          <button type="button" onClick={() => bumpQty("hardware", it.key, 1)} aria-label={`Increase ${it.name}`}>+</button>
+                        </div>
+                        <div className="calc-line-total" style={{ color: qty > 0 ? "var(--blue-primary)" : "#B4BCC6" }}>
+                          {cfg.onetime ? `$${line}` : `$${line}/mo`}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>{/* /panel 2 */}
 
                 {/* Section 3 */}
                 <div className="calc-panel" style={{ opacity: selectedPlan === "free" ? 0.6 : 1, transition: "opacity .4s" }}>
-                <div className="calc-section-title">
-                  <div className="calc-section-num">3</div>
-                  <h4>Add-on app devices</h4>
-                </div>
-                <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", margin: "-0.6rem 0 1.1rem 2.6rem" }}>{selectedPlan === "free" ? "Add-on apps unlock on the Plus or Premium plan. Select a paid plan above to configure." : "KDS and Kiosk app devices, priced per device for your selected plan."}</p>
+                  <div className="calc-section-title">
+                    <div className="calc-section-num">3</div>
+                    <h4>Add-on app devices</h4>
+                  </div>
+                  <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", margin: "-0.6rem 0 1.1rem 2.6rem" }}>{selectedPlan === "free" ? "Add-on apps unlock on the Plus or Premium plan. Select a paid plan above to configure." : "KDS and Kiosk app devices, priced per device for your selected plan."}</p>
 
-                <div className="calc-item">
-                  <div className="calc-item-info">
-                    <h4>Square KDS (Kitchen Display System) App</h4>
-                    <p>Send orders digitally to back kitchen monitors. Cost is $30/device (Plus) or $20/device (Premium).</p>
-                    <div className="calc-item-meta">
-                      <span>Plus: $30/mo</span>
-                      <span>Premium: $20/mo</span>
-                      <span>Kitchen App</span>
-                    </div>
-                  </div>
-                  <div className="calc-item-qty">
-                    <label>Qty</label>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      value={addonQty.kds} 
-                      disabled={selectedPlan === "free"}
-                      onChange={(e) => handleQtyChange("addon", "kds", e.target.value)}
-                    />
-                    <small>Plan-based</small>
-                  </div>
-                </div>
-
-                <div className="calc-item">
-                  <div className="calc-item-info">
-                    <h4>Square Kiosk App Devices</h4>
-                    <p>Run ordering flows on your kiosk screens. Cost is $50/device (Plus) or $30/device (Premium).</p>
-                    <div className="calc-item-meta">
-                      <span>Plus: $50/mo</span>
-                      <span>Premium: $30/mo</span>
-                      <span>Kiosk App</span>
-                    </div>
-                  </div>
-                  <div className="calc-item-qty">
-                    <label>Qty</label>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      value={addonQty.kiosk} 
-                      disabled={selectedPlan === "free"}
-                      onChange={(e) => handleQtyChange("addon", "kiosk", e.target.value)}
-                    />
-                    <small>Plan-based</small>
-                  </div>
-                </div>
+                  {[
+                    { key: "kds", name: "Square KDS — Kitchen Display App", desc: "Send orders digitally to kitchen monitors." },
+                    { key: "kiosk", name: "Square Kiosk App Devices", desc: "Run self-order flows on your kiosk screens." }
+                  ].map(it => {
+                    const qty = addonQty[it.key];
+                    const rate = selectedPlan === "free" ? 0 : pricingMatrix.addons[it.key][selectedPlan];
+                    const line = rate * qty;
+                    return (
+                      <div className="calc-item" key={it.key}>
+                        <div className="calc-item-info">
+                          <h4>{it.name}</h4>
+                          <p>{it.desc}</p>
+                          <div className="calc-item-meta">
+                            {selectedPlan === "free"
+                              ? <span>Requires Plus or Premium plan</span>
+                              : <><span>Plus: ${pricingMatrix.addons[it.key].plus}/mo</span><span>Premium: ${pricingMatrix.addons[it.key].premium}/mo</span></>}
+                          </div>
+                        </div>
+                        <div className="qty-stepper">
+                          <button type="button" disabled={selectedPlan === "free"} onClick={() => bumpQty("addon", it.key, -1)} aria-label={`Decrease ${it.name}`}>−</button>
+                          <span>{qty}</span>
+                          <button type="button" disabled={selectedPlan === "free"} onClick={() => bumpQty("addon", it.key, 1)} aria-label={`Increase ${it.name}`}>+</button>
+                        </div>
+                        <div className="calc-line-total" style={{ color: qty > 0 && selectedPlan !== "free" ? "var(--blue-primary)" : "#B4BCC6" }}>
+                          {selectedPlan === "free" ? "—" : `$${line}/mo`}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>{/* /panel 3 */}
               </div>
 
@@ -1329,49 +1388,41 @@ export default function Home() {
                   <strong>{locations}</strong>
                 </div>
                 <div className="summary-row">
-                  <span>Plan Level</span>
-                  <strong>{selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}</strong>
+                  <span>Plan level</span>
+                  <strong>{pricingMatrix.plansLabels[selectedPlan].replace("Square ", "")}</strong>
                 </div>
                 <div className="summary-row">
-                  <span>Software Monthly</span>
+                  <span>Software monthly</span>
                   <strong>${planMonthly}/mo</strong>
                 </div>
                 <div className="summary-row">
-                  <span>Hardware Monthly</span>
+                  <span>Hardware monthly</span>
                   <strong>${hardwareMonthly}/mo</strong>
                 </div>
                 <div className="summary-row">
-                  <span>KDS Software</span>
-                  <strong>${kdsMonthly}/mo</strong>
+                  <span>App add-ons</span>
+                  <strong>${kdsMonthly + kioskMonthly}/mo</strong>
                 </div>
                 <div className="summary-row">
-                  <span>Kiosk Software</span>
-                  <strong>${kioskMonthly}/mo</strong>
-                </div>
-                <div className="summary-row">
-                  <span>One-time Hardware</span>
+                  <span>One-time hardware</span>
                   <strong>${onetimeTotal}</strong>
                 </div>
                 <div className="summary-divider"></div>
                 <div className="summary-row total">
-                  <span>Est. Total Monthly</span>
+                  <span>Est. total monthly</span>
                   <strong>${totalMonthly}/mo</strong>
                 </div>
 
+                <button className="btn primary" style={{ width: "100%", marginTop: "1.25rem" }} onClick={applyQuoteToContact}>Request Final Quote</button>
+
                 <div className="summary-details">
-                  <h5>Included Selections:</h5>
+                  <h5>What this setup includes</h5>
                   <ul>
-                    {hardwareSummaryList.length === 0 ? (
-                      <li>No items selected yet.</li>
-                    ) : (
-                      hardwareSummaryList.map((item, idx) => <li key={idx}>{item}</li>)
-                    )}
+                    {setupIncludes.map((item, idx) => <li key={idx}>{item}</li>)}
                   </ul>
                 </div>
-                
-                <p style={{ fontSize: "0.7rem", color: "#7E8DA0", marginTop: "1rem", lineHeight: "1.5" }}>Financing totals are estimates based on standard Square credit terms. Taxes, processing rates, and shipping fees not included. Final pricing is subject to Square approval.</p>
 
-                <button className="btn primary" style={{ width: "100%", marginTop: "1.25rem" }} onClick={applyQuoteToContact}>Request Final Quote</button>
+                <p style={{ fontSize: "0.7rem", color: "#7E8DA0", marginTop: "1rem", lineHeight: "1.5" }}>Financing totals are estimates based on standard Square credit terms. Taxes, processing rates, and shipping fees not included. Final pricing is subject to Square approval.</p>
               </div>
             </div>
           </section>
@@ -1635,18 +1686,15 @@ export default function Home() {
       <footer>
         <div className="footer-top">
           <div className="footer-brand">
-            <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap">
-              <div className="logo-text">
-                <span className="brand-title" style={{ color: "var(--white)" }}>PRO COMMERCE</span>
-                <span className="brand-sub">Authorized Square Reseller</span>
-              </div>
+            <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap footer-logo">
+              <Image src="/Logo.png" alt="Pro Commerce Solutions" width={170} height={67} />
             </div>
             <p>Your trusted B2B partner for credit card processing, ATM placements, and official Square POS configuration consultations.</p>
-            <span className="tag">Authorized Reseller</span>
+            <span className="tag">Authorized Square Dealer</span>
           </div>
           
           <div className="footer-links">
-            <h4>Navigate Site</h4>
+            <h4>Explore</h4>
             <ul>
               <li><button onClick={() => navigateTo("home")}>Home Page</button></li>
               <li><button onClick={() => navigateTo("about")}>About Us</button></li>
@@ -1672,7 +1720,7 @@ export default function Home() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 Pro Commerce Solutions. Authorized reseller of Square products and services. All rights reserved.</p>
+          <p>&copy; 2026 Pro Commerce Solutions. Authorized dealer of Square products and services. All rights reserved.</p>
         </div>
       </footer>
 
@@ -1693,7 +1741,7 @@ export default function Home() {
                   <ShieldCheck size={36} />
                 </div>
                 <h3>Survey Captured!</h3>
-                <p style={{ margin: "1rem 0 2rem", color: "var(--text-muted)" }}>Your information has been logged securely in our pipeline. Dominique Wright will evaluate your details and prepare custom POS recommendations.</p>
+                <p style={{ margin: "1rem 0 2rem", color: "var(--text-muted)" }}>Your information has been logged securely in our pipeline. The team at Pro Commerce Solutions will evaluate your details and prepare custom POS recommendations.</p>
                 <div className="btn-row" style={{ justifyContent: "center" }}>
                   <button className="btn primary" onClick={() => setIsSurveyOpen(false)}>Done</button>
                 </div>
@@ -1933,7 +1981,7 @@ export default function Home() {
                   <ShieldCheck size={36} />
                 </div>
                 <h3>Statement Uploaded Privately</h3>
-                <p style={{ margin: "1rem 0 2rem", color: "var(--text-muted)" }}>Your merchant statements have been stored securely in our private drive for analysis. Dominique Wright will build your customized savings estimate.</p>
+                <p style={{ margin: "1rem 0 2rem", color: "var(--text-muted)" }}>Your merchant statements have been stored securely in our private drive for analysis. The Pro Commerce Solutions team will build your customized savings estimate.</p>
                 <div className="btn-row" style={{ justifyContent: "center" }}>
                   <button className="btn primary" onClick={() => setIsUploadOpen(false)}>Done</button>
                 </div>
@@ -2010,23 +2058,33 @@ export default function Home() {
       <div className="chat-widget">
         <div className={`chat-panel ${isChatOpen ? "show" : ""}`}>
           <div className="chat-head">
-            <h4>Pro Commerce Solutions</h4>
-            <button className="modal-close" style={{ color: "var(--white)" }} onClick={() => setIsChatOpen(false)}>&times;</button>
+            <div className="chat-head-id">
+              <span className="chat-avatar"><Sparkles size={18} /></span>
+              <div>
+                <h4>Pro Commerce Assistant</h4>
+                <span className="chat-status"><span className="chat-status-dot"></span>Online · B2B POS guidance</span>
+              </div>
+            </div>
+            <button className="chat-close" onClick={() => setIsChatOpen(false)} aria-label="Close chat">
+              <X size={18} />
+            </button>
           </div>
           <div className="chat-body" id="chat-body" ref={chatBodyRef}>
             {chatMessages.map((msg, idx) => (
-              <div key={idx} className={`chat-msg ${msg.sender === "bot" ? "bot" : "user"}`}>
-                {msg.text}
+              <div key={idx} className={`chat-row ${msg.sender === "bot" ? "bot" : "user"}`}>
+                {msg.sender === "bot" && <span className="chat-msg-avatar"><Sparkles size={13} /></span>}
+                <div className={`chat-msg ${msg.sender === "bot" ? "bot" : "user"}`}>{msg.text}</div>
               </div>
             ))}
-            
+
             {/* Typing Indicator */}
             {isBotTyping && (
-              <div className="chat-msg bot" style={{ fontStyle: "italic", opacity: 0.7 }}>
-                Typing...
+              <div className="chat-row bot">
+                <span className="chat-msg-avatar"><Sparkles size={13} /></span>
+                <div className="chat-msg bot chat-typing"><span></span><span></span><span></span></div>
               </div>
             )}
-            
+
             {!isBotTyping && chatMessages[chatMessages.length - 1].sender === "bot" && (
               <div className="chat-quick-replies">
                 <button className="chat-quick-btn" onClick={() => chatReply("I need a Square POS system")}>Square POS System</button>
@@ -2037,9 +2095,9 @@ export default function Home() {
             )}
           </div>
           <div className="chat-foot">
-            <input 
-              type="text" 
-              placeholder="Type a message..." 
+            <input
+              type="text"
+              placeholder="Type a message..."
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
@@ -2050,7 +2108,7 @@ export default function Home() {
           </div>
         </div>
         <button className="chat-bubble" onClick={() => setIsChatOpen(!isChatOpen)} aria-label="Open Chat Assistant">
-          <Sparkles size={24} />
+          {isChatOpen ? <X size={24} /> : <Sparkles size={24} />}
         </button>
       </div>
 
@@ -2115,6 +2173,18 @@ export default function Home() {
                     {activeProductDetail.name === "Square Reader (Contactless + Chip)" && (
                       <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Reader contactless and chip visual"><rect x="120" y="40" width="120" height="100" rx="26" fill="#FFFFFF" stroke="#2F3438" strokeWidth="9"/><path d="M168 75c16 16 16 34 0 50M193 65c25 28 25 52 0 80" fill="none" stroke="#50A8D8" strokeWidth="9" strokeLinecap="round"/><path d="M118 154h124" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
                     )}
+                    {activeProductDetail.name === "Square Stand Mount" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Stand Mount visual"><rect x="95" y="30" width="170" height="104" rx="16" fill="#2F3438"/><rect x="114" y="48" width="132" height="68" rx="9" fill="#EAF6FD"/><rect x="150" y="132" width="60" height="14" rx="6" fill="#2F3438"/><path d="M120 150h120" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/><circle cx="180" cy="82" r="11" fill="#50A8D8"/></svg>
+                    )}
+                    {activeProductDetail.name === "Square Dock for Square Handheld" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Dock visual"><rect x="138" y="20" width="84" height="118" rx="20" fill="#2F3438"/><rect x="151" y="38" width="58" height="62" rx="8" fill="#EAF6FD"/><circle cx="180" cy="118" r="10" fill="#50A8D8"/><rect x="120" y="138" width="120" height="20" rx="9" fill="#C4CCD6"/><path d="M150 158h60" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                    )}
+                    {activeProductDetail.name === "Square Reader for Magstripe" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Reader for magstripe visual"><rect x="150" y="40" width="60" height="60" rx="10" fill="#2F3438"/><rect x="172" y="100" width="16" height="40" rx="6" fill="#2F3438"/><path d="M165 70h30" stroke="#50A8D8" strokeWidth="8" strokeLinecap="round"/><path d="M118 150h124" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                    )}
+                    {activeProductDetail.name === "Square Accessories Kit" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Accessories visual"><rect x="60" y="60" width="86" height="80" rx="10" fill="#2F3438"/><rect x="74" y="76" width="58" height="22" rx="4" fill="#EAF6FD"/><rect x="206" y="84" width="96" height="56" rx="10" fill="#FFFFFF" stroke="#2F3438" strokeWidth="8"/><rect x="222" y="100" width="64" height="10" rx="5" fill="#50A8D8"/><path d="M70 150h220" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                    )}
                   </div>
                   <div className="product-detail-pricing" style={{ marginTop: "1.5rem", textAlign: "center" }}>
                     <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>Official Price:</span>
@@ -2154,6 +2224,72 @@ export default function Home() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* WELCOME LEAD-CAPTURE POPUP (on load) */}
+      <div className={`modal-overlay ${isWelcomeOpen ? "show" : ""}`} onClick={closeWelcome}>
+        <div className="modal-container welcome-modal" onClick={(e) => e.stopPropagation()}>
+          <button className="modal-close welcome-close" onClick={closeWelcome} aria-label="Close">&times;</button>
+          <div className="welcome-grid">
+            <div className="welcome-visual">
+              <Image src="/hero_pos_scene.jpg" alt="Modern Square POS setup" fill sizes="(max-width: 760px) 100vw, 45vw" />
+              <div className="welcome-visual-overlay">
+                <span className="welcome-badge"><span className="dot"></span>Authorized Square Dealer</span>
+                <h3>Let&apos;s build your perfect Square setup</h3>
+                <p>Tell us a little about your business and Pro Commerce Solutions will recommend the right POS, hardware, and onboarding path — free.</p>
+              </div>
+            </div>
+            <div className="welcome-form">
+              {welcomeSubmitted ? (
+                <div className="welcome-success">
+                  <div className="welcome-success-icon"><ShieldCheck size={34} /></div>
+                  <h3>You&apos;re all set!</h3>
+                  <p>Thanks{surveyForm.firstName ? `, ${surveyForm.firstName}` : ""}. The team at Pro Commerce Solutions will review your details and reach out shortly with tailored recommendations.</p>
+                  <button className="btn primary" style={{ width: "100%" }} onClick={closeWelcome}>Continue Exploring</button>
+                </div>
+              ) : (
+                <>
+                  <span className="kicker">Quick Start</span>
+                  <h3 style={{ marginBottom: "0.35rem" }}>Get a free recommendation</h3>
+                  <p style={{ fontSize: "0.88rem", marginBottom: "1.25rem" }}>It takes under a minute — no obligation.</p>
+                  <form onSubmit={handleWelcomeSubmit}>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>First name *</label>
+                        <input type="text" placeholder="First name" required value={surveyForm.firstName} onChange={(e) => setSurveyForm(prev => ({ ...prev, firstName: e.target.value }))} />
+                      </div>
+                      <div className="form-group">
+                        <label>Last name *</label>
+                        <input type="text" placeholder="Last name" required value={surveyForm.lastName} onChange={(e) => setSurveyForm(prev => ({ ...prev, lastName: e.target.value }))} />
+                      </div>
+                      <div className="form-group full">
+                        <label>Email *</label>
+                        <input type="email" placeholder="you@business.com" required value={surveyForm.email} onChange={(e) => setSurveyForm(prev => ({ ...prev, email: e.target.value }))} />
+                      </div>
+                      <div className="form-group full">
+                        <label>Phone *</label>
+                        <input type="tel" placeholder="(000) 000-0000" required value={surveyForm.phone} onChange={(e) => setSurveyForm(prev => ({ ...prev, phone: e.target.value }))} />
+                      </div>
+                      <div className="form-group full">
+                        <label>Business type</label>
+                        <select value={surveyForm.businessType} onChange={(e) => setSurveyForm(prev => ({ ...prev, businessType: e.target.value }))}>
+                          <option value="Restaurant (table service)">Restaurant (table service)</option>
+                          <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                          <option value="Retail">Retail</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+                    <button type="submit" className="btn primary" style={{ width: "100%", marginTop: "1.1rem" }} disabled={loadingAction === "welcome"}>
+                      {loadingAction === "welcome" ? "Submitting..." : "Get My Recommendation"}
+                    </button>
+                    <button type="button" className="welcome-skip" onClick={closeWelcome}>Maybe later — just browsing</button>
+                  </form>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
