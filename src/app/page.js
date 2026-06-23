@@ -41,6 +41,8 @@ export default function Home() {
   // Modals
   const [isSurveyOpen, setIsSurveyOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [activeProductDetail, setActiveProductDetail] = useState(null);
   const [surveyStep, setSurveyStep] = useState(1);
 
   // Form Submissions states
@@ -283,6 +285,112 @@ export default function Home() {
     navigateTo("contact", "consultation-form");
   };
 
+  const hardwareDetails = {
+    register: {
+      name: "Square Register",
+      price: "$899 or $44/mo",
+      url: "https://squareup.com/us/en/hardware/register",
+      desc: "Complete countertop POS system with customer-facing display. Designed for high-volume retail or restaurant checkout.",
+      specs: [
+        "Merchant screen: 13.3-inch display (1920x1080 resolution)",
+        "Customer screen: 7.0-inch display (1024x600 resolution)",
+        "Built-in card reader: Chip (EMV), Contactless (NFC), and Magstripe",
+        "Connectivity: Wi-Fi, Ethernet, and USB accessory hub (5 ports)",
+        "Software: Pre-installed Square POS software"
+      ],
+      bestFor: "Full-service restaurants, retail boutiques, and busy counter-service hubs."
+    },
+    handheld: {
+      name: "Square Terminal / Handheld",
+      price: "$399 or $37/mo",
+      url: "https://squareup.com/us/en/hardware/handheld",
+      desc: "Compact, durable mobile terminal. Perfect for restaurant table ordering, line busting, patio checkouts, and staff on the move.",
+      specs: [
+        "Screen: 5.5-inch color LCD touch screen",
+        "Battery: All-day battery life (up to 8 hours of active use)",
+        "Built-in printer: Thermal receipt printer (58mm width)",
+        "Connectivity: Wi-Fi, and optional USB hub attachment",
+        "Payments: Contactless cards, Apple Pay, Google Pay, and Chip cards"
+      ],
+      bestFor: "Tableside ordering, queue line busting, patio checkouts, and pop-up locations."
+    },
+    terminal: {
+      name: "Square Terminal",
+      price: "$299 or $27/mo",
+      url: "https://squareup.com/us/en/hardware/terminal",
+      desc: "Compact card payment device with receipt printer built-in. Great for countertops or tableside receipt printing.",
+      specs: [
+        "Screen: 5.5-inch color LCD touch screen",
+        "Printer: Built-in thermal printer for instant receipts",
+        "Battery: Rechargeable battery for cordless tableside use",
+        "Connectivity: Wi-Fi, Ethernet, and accessory port via hub",
+        "Security: Fully encrypted payments out-of-the-box"
+      ],
+      bestFor: "Countertop checkouts, medical offices, professional services, and dine-in tables."
+    },
+    stand: {
+      name: "Square Stand",
+      price: "$149 or $14/mo",
+      url: "https://squareup.com/us/en/hardware/stand",
+      desc: "iPad countertop stand with contactless and chip reader built in. Turn an iPad into a sleek checkout monitor.",
+      specs: [
+        "iPad compatibility: Fits iPad 10.2\", iPad Air, and iPad Pro 10.5\"",
+        "Payments: Contactless and chip reader embedded in the stand bezel",
+        "Swivel: 180-degree smooth swivel base for easy customer signing",
+        "Connectivity: USB accessory hub included with stand power adapter",
+        "Power: Charges iPad continuously when plugged in"
+      ],
+      bestFor: "Independent boutiques, cafes, fitness studios, and coffee shops."
+    },
+    kiosk: {
+      name: "Square Kiosk",
+      price: "$149 or $14/mo",
+      url: "https://squareup.com/us/en/hardware/kiosk",
+      desc: "Customer self-service checkout hardware. Shorter lines and faster turnaround for quick-service counters and cafes.",
+      specs: [
+        "iPad compatibility: Designed to secure standard iPad models",
+        "Payments: Integrated contactless tap area and chip slot",
+        "Mounting: Desktop mount, wall mount, or pedestal options",
+        "Software: Requires Square Kiosk app subscription",
+        "Security: Key-locked tamper-proof steel enclosure"
+      ],
+      bestFor: "Quick-service cafes, bakeries, fast-food counters, and high-traffic order hubs."
+    },
+    reader: {
+      name: "Square Reader (Contactless + Chip)",
+      price: "$59 one-time payment",
+      url: "https://squareup.com/us/en/hardware/reader",
+      desc: "Simple pocket-sized card reader. Pairs via Bluetooth to run card checkouts directly on your iOS or Android phone.",
+      specs: [
+        "Connectivity: Bluetooth Low Energy (BLE) connects to smartphones/tablets",
+        "Payments: NFC contactless cards, Apple Pay, Google Pay, and Chip cards",
+        "Size: Ultra-compact (2.6\" x 2.6\" x 0.4\" pocket dimensions)",
+        "Battery: Rechargeable battery via micro-USB",
+        "Stand: Optional dock accessory available for countertop setups"
+      ],
+      bestFor: "Mobile vendors, service contractors, taxi drivers, and entry-level merchants."
+    }
+  };
+
+  const addProductToCalculator = (productName) => {
+    let key = "";
+    if (productName === "Square Register") key = "register";
+    else if (productName === "Square Terminal / Handheld") key = "handheld";
+    else if (productName === "Square Terminal") key = "terminal";
+    else if (productName === "Square Stand") key = "stand";
+    else if (productName === "Square Kiosk") key = "kioskHardware";
+    else if (productName === "Square Reader (Contactless + Chip)") key = "reader";
+    
+    if (key) {
+      setHardwareQty(prev => ({
+        ...prev,
+        [key]: prev[key] === 0 ? 1 : prev[key]
+      }));
+    }
+    setActiveProductDetail(null);
+    navigateTo("products", "calculator");
+  };
+
   // --- FORMS SUBMISSION MOCKS ---
   const handleContactSubmit = (e) => {
     e.preventDefault();
@@ -470,7 +578,7 @@ export default function Home() {
                 <div className="hero-actions">
                   <button className="btn primary" onClick={openSurvey}>Get Started</button>
                   <button className="btn ghost" onClick={() => navigateTo("products", "calculator")}>Estimate Monthly Cost</button>
-                  <button className="btn ghost" onClick={() => window.open("https://drive.google.com/file/d/18Wbv1P9HwI35UsmNl-VUWRZFuQPAEl_c/view", "_blank")}>
+                  <button className="btn ghost" onClick={() => setIsVideoModalOpen(true)}>
                     <Play size={16} fill="currentColor" /> Watch Video
                   </button>
                 </div>
@@ -729,7 +837,7 @@ export default function Home() {
                   <div className="price-line"><strong>$899 or $44/mo (24 mo. financing)</strong></div>
                   <div className="square-links">
                     <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/register", "_blank")}>View on Square</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.register)}>View Specs</button>
                   </div>
                 </div>
               </div>
@@ -746,7 +854,7 @@ export default function Home() {
                   <div className="price-line"><strong>$399 or $37/mo (12 mo. financing)</strong></div>
                   <div className="square-links">
                     <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/handheld", "_blank")}>View on Square</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.handheld)}>View Specs</button>
                   </div>
                 </div>
               </div>
@@ -763,7 +871,7 @@ export default function Home() {
                   <div className="price-line"><strong>$299 or $27/mo (12 mo. financing)</strong></div>
                   <div className="square-links">
                     <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/terminal", "_blank")}>View on Square</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.terminal)}>View Specs</button>
                   </div>
                 </div>
               </div>
@@ -780,7 +888,7 @@ export default function Home() {
                   <div className="price-line"><strong>$149 or $14/mo (12 mo. financing)</strong></div>
                   <div className="square-links">
                     <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/stand", "_blank")}>View on Square</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.stand)}>View Specs</button>
                   </div>
                 </div>
               </div>
@@ -797,7 +905,7 @@ export default function Home() {
                   <div className="price-line"><strong>$149 or $14/mo (12 mo. financing)</strong></div>
                   <div className="square-links">
                     <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/kiosk", "_blank")}>View on Square</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.kiosk)}>View Specs</button>
                   </div>
                 </div>
               </div>
@@ -814,7 +922,7 @@ export default function Home() {
                   <div className="price-line"><strong>$59 one-time payment</strong></div>
                   <div className="square-links">
                     <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => window.open("https://squareup.com/us/en/hardware/reader", "_blank")}>View on Square</button>
+                    <button className="btn secondary small" onClick={() => setActiveProductDetail(hardwareDetails.reader)}>View Specs</button>
                   </div>
                 </div>
               </div>
@@ -1784,6 +1892,110 @@ export default function Home() {
         <button className="chat-bubble" onClick={() => setIsChatOpen(!isChatOpen)} aria-label="Open Chat Assistant">
           <Sparkles size={24} />
         </button>
+      </div>
+
+      {/* MODAL: WATCH VIDEO MODAL */}
+      <div className={`modal-overlay ${isVideoModalOpen ? "show" : ""}`} onClick={() => setIsVideoModalOpen(false)}>
+        <div className="modal-container video-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <div>
+              <h3>Walkthrough & Setup Video</h3>
+              <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Step-by-step Pro Commerce Solutions setup tutorial.</p>
+            </div>
+            <button className="modal-close" onClick={() => setIsVideoModalOpen(false)}>&times;</button>
+          </div>
+          <div className="modal-body" style={{ padding: 0, overflow: "hidden", background: "#000" }}>
+            {isVideoModalOpen && (
+              <div className="video-iframe-container">
+                <iframe 
+                  src="https://drive.google.com/file/d/18Wbv1P9HwI35UsmNl-VUWRZFuQPAEl_c/preview" 
+                  width="100%" 
+                  height="100%" 
+                  allow="autoplay; encrypted-media" 
+                  allowFullScreen
+                  title="Pro Commerce Setup Walkthrough Video"
+                  style={{ border: "none" }}
+                ></iframe>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* MODAL: PRODUCT DETAIL MODAL */}
+      <div className={`modal-overlay ${activeProductDetail ? "show" : ""}`} onClick={() => setActiveProductDetail(null)}>
+        <div className="modal-container product-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <div>
+              <h3>Hardware Specifications</h3>
+              <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Official Square Device details and connectivity.</p>
+            </div>
+            <button className="modal-close" onClick={() => setActiveProductDetail(null)}>&times;</button>
+          </div>
+          <div className="modal-body">
+            {activeProductDetail && (
+              <div className="product-detail-wrap">
+                <div className="product-detail-visual">
+                  <div className="device-visual" style={{ background: "var(--bg-main)", borderRadius: "var(--radius-lg)", padding: "2rem", display: "grid", placeItems: "center" }}>
+                    {activeProductDetail.name === "Square Register" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Register visual"><rect x="40" y="35" width="160" height="90" rx="16" fill="#2F3438"/><rect x="58" y="52" width="124" height="55" rx="10" fill="#EAF6FD"/><circle cx="145" cy="80" r="13" fill="#50A8D8"/><rect x="225" y="50" width="72" height="86" rx="13" fill="#FFFFFF" stroke="#2F3438" strokeWidth="8"/><rect x="238" y="65" width="46" height="20" rx="5" fill="#EAF6FD"/><path d="M80 140h170" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                    )}
+                    {activeProductDetail.name === "Square Terminal / Handheld" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Handheld visual"><rect x="130" y="22" width="100" height="138" rx="26" fill="#2F3438"/><rect x="145" y="44" width="70" height="72" rx="10" fill="#EAF6FD"/><circle cx="180" cy="135" r="13" fill="#50A8D8"/><path d="M88 150h184" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                    )}
+                    {activeProductDetail.name === "Square Terminal" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Terminal visual"><rect x="105" y="25" width="150" height="130" rx="28" fill="#FFFFFF" stroke="#2F3438" strokeWidth="9"/><rect x="128" y="50" width="104" height="55" rx="10" fill="#EAF6FD"/><circle cx="180" cy="126" r="14" fill="#50A8D8"/><path d="M118 155h124" stroke="#CBD5E1" strokeWidth="8" strokeLinecap="round"/></svg>
+                    )}
+                    {activeProductDetail.name === "Square Stand" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Stand visual"><rect x="88" y="35" width="154" height="96" rx="20" fill="#2F3438"/><rect x="107" y="54" width="116" height="58" rx="10" fill="#EAF6FD"/><rect x="150" y="128" width="60" height="18" rx="8" fill="#50A8D8"/><path d="M115 154h130" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                    )}
+                    {activeProductDetail.name === "Square Kiosk" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Kiosk visual"><rect x="115" y="25" width="130" height="95" rx="20" fill="#2F3438"/><rect x="135" y="45" width="90" height="52" rx="10" fill="#EAF6FD"/><rect x="160" y="118" width="40" height="34" rx="8" fill="#50A8D8"/><path d="M110 158h140" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                    )}
+                    {activeProductDetail.name === "Square Reader (Contactless + Chip)" && (
+                      <svg viewBox="0 0 360 180" style={{ width: "100%", maxHeight: "150px" }} role="img" aria-label="Square Reader contactless and chip visual"><rect x="120" y="40" width="120" height="100" rx="26" fill="#FFFFFF" stroke="#2F3438" strokeWidth="9"/><path d="M168 75c16 16 16 34 0 50M193 65c25 28 25 52 0 80" fill="none" stroke="#50A8D8" strokeWidth="9" strokeLinecap="round"/><path d="M118 154h124" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
+                    )}
+                  </div>
+                  <div className="product-detail-pricing" style={{ marginTop: "1.5rem", textAlign: "center" }}>
+                    <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>Official Price:</span>
+                    <strong style={{ fontSize: "1.35rem", color: "var(--charcoal-dark)" }}>{activeProductDetail.price}</strong>
+                  </div>
+                </div>
+                
+                <div className="product-detail-info">
+                  <h4 style={{ fontSize: "1.25rem", marginBottom: "0.5rem", color: "var(--charcoal-dark)", fontWeight: 700 }}>{activeProductDetail.name}</h4>
+                  <p style={{ fontSize: "0.95rem", color: "var(--text-main)", marginBottom: "1.5rem", lineHeight: "1.5" }}>{activeProductDetail.desc}</p>
+                  
+                  <div className="specs-section" style={{ marginBottom: "1.5rem" }}>
+                    <h5 style={{ textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: "0.5rem", fontWeight: 700 }}>Technical Specifications</h5>
+                    <ul style={{ listStyle: "disc", paddingLeft: "1.2rem", fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
+                      {activeProductDetail.specs.map((spec, idx) => (
+                        <li key={idx} style={{ marginBottom: "0.4rem" }}>{spec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div className="best-for-section" style={{ marginBottom: "2rem", background: "var(--blue-soft)", padding: "1rem", borderRadius: "var(--radius-md)", border: "1px solid var(--blue-soft-border)" }}>
+                    <h5 style={{ textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em", color: "var(--blue-dark)", marginBottom: "0.25rem", fontWeight: 700 }}>Best For</h5>
+                    <p style={{ fontSize: "0.85rem", color: "var(--blue-dark)", marginBottom: 0 }}>{activeProductDetail.bestFor}</p>
+                  </div>
+                  
+                  <div className="product-detail-actions" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    <button className="btn primary" style={{ width: "100%" }} onClick={() => addProductToCalculator(activeProductDetail.name)}>
+                      Add to Monthly Estimate
+                    </button>
+                    <button className="btn secondary" style={{ width: "100%" }} onClick={() => window.open(activeProductDetail.url, "_blank")}>
+                      Open Square Store Checkout <ArrowUpRight size={16} />
+                    </button>
+                    <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", textAlign: "center", display: "block", marginTop: "0.25rem" }}>
+                      🔒 Security Note: Square's checkout domain blocks embedded framing. Clicking opens a secure window.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </>
   );

@@ -1195,6 +1195,56 @@ main {
   padding: 2rem;
 }
 
+/* Watch Video Modal & Iframe styles */
+.video-modal {
+  max-width: 800px;
+  width: 95%;
+}
+
+.video-iframe-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+}
+
+.video-iframe-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Product Specifications Modal split-layout styles */
+.product-modal {
+  max-width: 850px;
+  width: 95%;
+}
+
+.product-detail-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 2.5rem;
+}
+
+.product-detail-visual {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-detail-info {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .product-detail-wrap {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 /* Multi-step survey progress bar */
 .survey-progress {
   display: flex;
