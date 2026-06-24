@@ -915,6 +915,8 @@ main {
 }
 
 .hero-image-container img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1129,7 +1131,7 @@ main {
   box-shadow: var(--shadow-lg);
 }
 
-.service-media img { object-fit: cover; transition: transform 0.9s var(--ease); }
+.service-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease); }
 .service-row:hover .service-media img { transform: scale(1.05); }
 
 .service-num {

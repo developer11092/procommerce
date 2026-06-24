@@ -589,6 +589,19 @@ export default function Home() {
   // product photo URLs any time — the modal cross-fades through whatever is here.
   const productGallery = ["/hero_pos_scene.jpg", "/restaurant_path.jpg", "/retail_path.jpg", "/cafe_path.jpg"];
 
+  // Free stock imagery (Unsplash). If a remote image fails to load it falls
+  // back to a bundled local photo, so nothing ever appears broken.
+  const stock = {
+    about:      { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
+    consult:    { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
+    statement:  { src: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1280&q=70", fb: "/cafe_path.jpg" },
+    restaurant: { src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1280&q=70", fb: "/restaurant_path.jpg" },
+    retail:     { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1280&q=70", fb: "/retail_path.jpg" },
+    hardware:   { src: "https://images.unsplash.com/photo-1556745757-8d76bdb6984b?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
+    onboarding: { src: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1280&q=70", fb: "/cafe_path.jpg" }
+  };
+  const onImgError = (fb) => (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fb; };
+
   const openProduct = (item) => {
     setActiveProductDetail(item);
     setProductSlide(0);
@@ -1046,11 +1059,11 @@ export default function Home() {
                 </div>
               </div>
               <div className="hero-image-container">
-                <Image src="/dominique_profile.jpg" alt="Dominique Wright - CEO & POS Advisor" fill sizes="(max-width: 1024px) 100vw, 50vw" />
+                <img src={stock.about.src} onError={onImgError(stock.about.fb)} alt="Modern Square-powered payments for small business" loading="lazy" />
                 <div className="hero-overlay">
                   <div className="overlay-metric">
-                    <strong>Dominique Wright</strong>
-                    <span>Founder & CEO</span>
+                    <strong>Square-powered</strong>
+                    <span>Payments built for small business</span>
                   </div>
                 </div>
               </div>
@@ -1118,16 +1131,16 @@ export default function Home() {
 
             <div className="service-rows">
               {[
-                { icon: <Search size={22} />, img: "/hero_pos_scene.jpg", n: "01", title: "Square POS Consultation", desc: "We review your business type, volume, locations, and hardware needs to map the correct Square configuration — so you invest in exactly what fits how you operate.", cta: "Compare Square Plans", onClick: () => navigateTo("plans") },
-                { icon: <FileText size={22} />, img: "/cafe_path.jpg", n: "02", title: "Processing Statement Review", desc: "Send a recent processing statement and we break down standard interchange costs versus your current markup, highlighting where you can save.", cta: "Upload Statement", onClick: openUploadModal },
-                { icon: <Utensils size={22} />, img: "/restaurant_path.jpg", n: "03", title: "Restaurant POS Setup", desc: "Set up table-service, bars, cafés, and quick-service operations. We configure menus, kitchen display terminals, modifiers, and floor maps for fast turnaround.", cta: "Restaurant Survey", onClick: () => openSurveyWithPath("restaurant") },
-                { icon: <ShoppingBag size={22} />, img: "/retail_path.jpg", n: "04", title: "Retail POS Setup", desc: "Connect inventory catalogs, barcodes, scanners, checkout stands, receipt printers, and online store integrations into one synced system.", cta: "Retail Survey", onClick: () => openSurveyWithPath("retail") },
-                { icon: <Settings size={22} />, img: "/hero_pos_scene.jpg", n: "05", title: "Square Hardware Setup", desc: "Browse registers, handhelds, stands, kiosks, and chip readers. We curate complete hardware kits matched to your checkout layout and daily flow.", cta: "View Hardware Catalog", onClick: () => navigateTo("products") },
-                { icon: <Zap size={22} />, img: "/dominique_profile.jpg", n: "06", title: "Square Onboarding", desc: "Ready to sign up? As an authorized Square dealer, we provide a direct path for faster profile creation and hands-on onboarding support.", cta: "Start Onboarding", onClick: () => window.open("https://squareup.com/i/5AC21678BF", "_blank") }
+                { icon: <Search size={22} />, img: stock.consult, n: "01", title: "Square POS Consultation", desc: "We review your business type, volume, locations, and hardware needs to map the correct Square configuration — so you invest in exactly what fits how you operate.", cta: "Compare Square Plans", onClick: () => navigateTo("plans") },
+                { icon: <FileText size={22} />, img: stock.statement, n: "02", title: "Processing Statement Review", desc: "Send a recent processing statement and we break down standard interchange costs versus your current markup, highlighting where you can save.", cta: "Upload Statement", onClick: openUploadModal },
+                { icon: <Utensils size={22} />, img: stock.restaurant, n: "03", title: "Restaurant POS Setup", desc: "Set up table-service, bars, cafés, and quick-service operations. We configure menus, kitchen display terminals, modifiers, and floor maps for fast turnaround.", cta: "Restaurant Survey", onClick: () => openSurveyWithPath("restaurant") },
+                { icon: <ShoppingBag size={22} />, img: stock.retail, n: "04", title: "Retail POS Setup", desc: "Connect inventory catalogs, barcodes, scanners, checkout stands, receipt printers, and online store integrations into one synced system.", cta: "Retail Survey", onClick: () => openSurveyWithPath("retail") },
+                { icon: <Settings size={22} />, img: stock.hardware, n: "05", title: "Square Hardware Setup", desc: "Browse registers, handhelds, stands, kiosks, and chip readers. We curate complete hardware kits matched to your checkout layout and daily flow.", cta: "View Hardware Catalog", onClick: () => navigateTo("products") },
+                { icon: <Zap size={22} />, img: stock.onboarding, n: "06", title: "Square Onboarding", desc: "Ready to sign up? As an authorized Square dealer, we provide a direct path for faster profile creation and hands-on onboarding support.", cta: "Start Onboarding", onClick: () => window.open("https://squareup.com/i/5AC21678BF", "_blank") }
               ].map((s, i) => (
                 <div className={`service-row animate-on-scroll ${i % 2 ? "reverse" : ""}`} key={s.n}>
                   <div className="service-media">
-                    <Image src={s.img} alt={s.title} fill sizes="(max-width: 900px) 100vw, 45vw" />
+                    <img src={s.img.src} onError={onImgError(s.img.fb)} alt={s.title} loading="lazy" />
                     <span className="service-num">{s.n}</span>
                   </div>
                   <div className="service-content">
