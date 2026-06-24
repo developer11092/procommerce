@@ -6,6 +6,7 @@ import {
   Search,
   FileText,
   Settings,
+  CreditCard,
   Mail,
   User, 
   Check, 
@@ -598,7 +599,12 @@ export default function Home() {
     restaurant: { src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1280&q=70", fb: "/restaurant_path.jpg" },
     retail:     { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1280&q=70", fb: "/retail_path.jpg" },
     hardware:   { src: "https://images.unsplash.com/photo-1556745757-8d76bdb6984b?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
-    onboarding: { src: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1280&q=70", fb: "/cafe_path.jpg" }
+    onboarding: { src: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1280&q=70", fb: "/cafe_path.jpg" },
+    heroMain:   { src: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1280&q=75", fb: "/hero_pos_scene.jpg" },
+    nRestaurant:{ src: "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=900&q=70", fb: "/restaurant_path.jpg" },
+    nCafe:      { src: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=900&q=70", fb: "/cafe_path.jpg" },
+    nRetail:    { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=70", fb: "/retail_path.jpg" },
+    showcase:   { src: "https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=1280&q=75", fb: "/hero_pos_scene.jpg" }
   };
   const onImgError = (fb) => (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fb; };
 
@@ -779,7 +785,7 @@ export default function Home() {
           <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap">
             <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={56} height={56} className="logo-icon" priority />
             <span className="logo-text">
-              <span className="brand-title">PRO COMMERCE</span>
+              <span className="brand-title">ProCommerce Solutions</span>
               <span className="brand-sub">Authorized Square Dealer</span>
             </span>
           </div>
@@ -862,7 +868,7 @@ export default function Home() {
               {/* animated composition */}
               <div className="hero-visual">
                 <div className="hero-photo" data-parallax="-0.08">
-                  <Image src="/hero_pos_scene.jpg" alt="Modern POS system on a countertop" fill priority sizes="(max-width: 1080px) 100vw, 50vw" />
+                  <img src={stock.heroMain.src} onError={onImgError(stock.heroMain.fb)} alt="Modern POS system on a countertop" />
                 </div>
                 {/* payment approved card */}
                 <div className="float-card fc-pay" data-parallax="-0.22">
@@ -950,7 +956,7 @@ export default function Home() {
             <div className="grid grid-3">
               <div className="pathway-card animate-on-scroll" data-dir="left">
                 <div className="pathway-img">
-                  <Image src="/restaurant_path.jpg" alt="Modern restaurant kitchen" fill sizes="33vw" />
+                  <img className="pc-nicheimg" src={stock.nRestaurant.src} onError={onImgError(stock.nRestaurant.fb)} alt="Modern restaurant kitchen" loading="lazy" />
                 </div>
                 <div className="pathway-content">
                   <h3>Restaurants</h3>
@@ -961,7 +967,7 @@ export default function Home() {
               
               <div className="pathway-card animate-on-scroll" data-dir="up" data-delay="1">
                 <div className="pathway-img">
-                  <Image src="/cafe_path.jpg" alt="Vibrant quick service coffee shop counter" fill sizes="33vw" />
+                  <img className="pc-nicheimg" src={stock.nCafe.src} onError={onImgError(stock.nCafe.fb)} alt="Vibrant quick service coffee shop counter" loading="lazy" />
                 </div>
                 <div className="pathway-content">
                   <h3>Cafés & QSR</h3>
@@ -972,13 +978,34 @@ export default function Home() {
 
               <div className="pathway-card animate-on-scroll" data-dir="right" data-delay="2">
                 <div className="pathway-img">
-                  <Image src="/retail_path.jpg" alt="Boutique retail shop apparel racks" fill sizes="33vw" />
+                  <img className="pc-nicheimg" src={stock.nRetail.src} onError={onImgError(stock.nRetail.fb)} alt="Boutique retail shop apparel racks" loading="lazy" />
                 </div>
                 <div className="pathway-content">
                   <h3>Retail Stores</h3>
                   <p>Barcode scanning, advanced inventory trackers, customer profiles, vendor management, and multi-location product catalog sync.</p>
                   <button className="btn primary small" onClick={() => openSurveyWithPath("retail")}>Get Retail Survey</button>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Ecosystem showcase */}
+          <section className="container">
+            <div className="showcase-row">
+              <div className="showcase-media animate-on-scroll" data-dir="left">
+                <img src={stock.showcase.src} onError={onImgError(stock.showcase.fb)} alt="Business owner taking a payment on a Square device" loading="lazy" />
+              </div>
+              <div className="showcase-content animate-on-scroll" data-dir="right" data-delay="1">
+                <span className="kicker">One Connected System</span>
+                <h2>Everything your counter needs, working together</h2>
+                <p>From the first tap to end-of-day reporting, your hardware, software, and payments stay in sync — so you spend less time wrestling tools and more time serving customers.</p>
+                <ul className="showcase-list">
+                  <li><Check size={18} /> Take payments in person, online, and on the go</li>
+                  <li><Check size={18} /> Track inventory, staff, and sales in real time</li>
+                  <li><Check size={18} /> Add invoices, loyalty, and gift cards as you grow</li>
+                  <li><Check size={18} /> Transparent pricing with no long-term contracts</li>
+                </ul>
+                <button className="btn primary" onClick={openSurvey}>Get a Free Recommendation</button>
               </div>
             </div>
           </section>
@@ -1041,10 +1068,10 @@ export default function Home() {
         </div>
 
         {/* PAGE 2: ABOUT US */}
-        <div className={`spa-page page-dark ${currentPage === "about" ? "active" : ""}`} id="about">
+        <div className={`spa-page ${currentPage === "about" ? "active" : ""}`} id="about">
           <section className="container">
             <div className="story-block">
-              <div className="hero-text">
+              <div className="hero-text animate-on-scroll" data-dir="left">
                 <span className="kicker">Our Journey</span>
                 <h2>About Pro Commerce Solutions</h2>
                 <div className="story-text">
@@ -1058,7 +1085,7 @@ export default function Home() {
                   <button className="btn ghost" onClick={() => navigateTo("services")}>Explore Our Services</button>
                 </div>
               </div>
-              <div className="hero-image-container">
+              <div className="hero-image-container animate-on-scroll" data-dir="right" data-delay="1">
                 <img src={stock.about.src} onError={onImgError(stock.about.fb)} alt="Modern Square-powered payments for small business" loading="lazy" />
                 <div className="hero-overlay">
                   <div className="overlay-metric">
@@ -1110,10 +1137,11 @@ export default function Home() {
                 <span className="kicker">Meet the Founder</span>
                 <h2>Dominique Wright</h2>
                 <p className="founder-role">Founder &amp; CEO, Pro Commerce Solutions</p>
-                <p>As a dedicated payments professional, Dominique is passionate about driving innovation and excellence in the financial sector. She founded Pro Commerce Solutions to provide businesses with streamlined payment solutions that enhance efficiency and customer experience.</p>
-                <p>In addition to her work at Pro Commerce Solutions, Dominique serves as the CFO on the board of the nonprofit organization “It Takes A Village MN,” leveraging her financial expertise to help guide the organization’s mission to support and uplift the community.</p>
-                <p>A strong advocate for financial literacy, she is committed to empowering the next generation with essential money-management skills — facilitating financial literacy classes for children and young adults, and co-authoring “Nourish to Flourish,” a program that taught 14 young individuals basic financial skills while promoting healthy food choices.</p>
-                <p>Through her work, Dominique aims to inspire others to take charge of their financial futures and make informed decisions that enhance their quality of life. Feel free to connect to learn more about her journey or to explore collaboration opportunities.</p>
+                <p>As a dedicated payments professional, I am passionate about driving innovation and excellence in the financial sector. I founded Pro Commerce Solutions to provide businesses with streamlined payment solutions that enhance efficiency and customer experience.</p>
+                <p>In addition to my work at Pro Commerce Solutions, I serve as the CFO on the board of the nonprofit organization “It Takes A Village MN.” In this role, I leverage my financial expertise to help guide the organization’s mission to support and uplift our community.</p>
+                <p>A strong advocate for financial literacy, I am committed to empowering the next generation with essential money management skills. I facilitate financial literacy classes for children and young adults, ensuring they have the knowledge needed to thrive financially. I also co-authored “Nourish to Flourish,” a program that taught 14 young individuals about basic financial skills while promoting healthy food choices.</p>
+                <p>Through my work, I aim to inspire others to take charge of their financial futures and make informed decisions that enhance their quality of life.</p>
+                <p>Feel free to connect with me to learn more about my journey or to explore collaboration opportunities.</p>
                 <a href="#contact" onClick={() => navigateTo("contact")} className="btn primary" style={{ marginTop: "0.5rem" }}>Connect with Dominique</a>
               </div>
             </div>
@@ -1160,7 +1188,7 @@ export default function Home() {
 
         {/* PAGE 4: PRODUCTS */}
         <div className={`spa-page ${currentPage === "products" ? "active" : ""}`} id="products">
-          <section className="container">
+          <section className="container" style={{ paddingBottom: "1.5rem" }}>
             <div className="official-note">
               <div className="official-note-icon">
                 <Info size={20} />
@@ -1352,7 +1380,7 @@ export default function Home() {
           </section>
 
           {/* Cost Estimator / Calculator Section */}
-          <section className="container animate-on-scroll" id="calculator" style={{ borderTop: "1px solid var(--border-color)", paddingTop: "5rem", marginTop: "5rem" }}>
+          <section className="container animate-on-scroll" id="calculator" style={{ paddingTop: "1rem" }}>
             <div className="section-header">
               <span className="kicker">Estimate Monthly Cost</span>
               <h2>Setup cost calculator</h2>
@@ -1536,6 +1564,32 @@ export default function Home() {
 
         {/* PAGE 5: SQUARE PLANS */}
         <div className={`spa-page ${currentPage === "plans" ? "active" : ""}`} id="plans">
+          {/* What is Square — intro */}
+          <section className="container" style={{ paddingBottom: "1rem" }}>
+            <div className="section-header animate-on-scroll">
+              <span className="kicker">The Basics</span>
+              <h2>What is Square?</h2>
+              <p>Square is an all-in-one platform that helps businesses accept payments and run day-to-day operations. It brings together point-of-sale software, card readers and hardware, payment processing, and back-office tools — so you can sell in person, online, and on the go from one connected system.</p>
+            </div>
+            <div className="grid grid-3">
+              <div className="card animate-on-scroll" data-dir="left">
+                <div className="icon-circle"><CreditCard size={24} /></div>
+                <h3>Accept Payments</h3>
+                <p>Take tap, chip, and contactless cards, plus Apple Pay and Google Pay. Square handles the processing with clear per-transaction pricing and no long-term contracts.</p>
+              </div>
+              <div className="card animate-on-scroll" data-dir="up" data-delay="1">
+                <div className="icon-circle"><Settings size={24} /></div>
+                <h3>Run Your Business</h3>
+                <p>Manage inventory, staff, customers, and reporting from the POS. Add online ordering, invoices, loyalty, and gift cards as your needs grow — all in one ecosystem.</p>
+              </div>
+              <div className="card animate-on-scroll" data-dir="right" data-delay="2">
+                <div className="icon-circle"><TrendingUp size={24} /></div>
+                <h3>Scale With Confidence</h3>
+                <p>Start free and upgrade only when you need advanced features. Square grows with you — from a single counter to multiple locations — with hardware you can buy or finance.</p>
+              </div>
+            </div>
+          </section>
+
           <section className="container">
             <div className="section-header">
               <span className="kicker">Compare Options</span>
@@ -1543,9 +1597,9 @@ export default function Home() {
               <p>Choose the tier that fits your volume and scaling needs. Plus and Premium packages unlock advanced operations.</p>
             </div>
 
-            <div className="plans-grid animate-on-scroll">
+            <div className="plans-grid">
               {/* Free */}
-              <div className="plan-card">
+              <div className="plan-card animate-on-scroll" data-dir="left">
                 <h3 className="plan-name">Square Free</h3>
                 <div className="plan-price">$0<span>/location</span></div>
                 <p style={{ fontSize: "0.85rem", marginBottom: "1.5rem" }}>Core POS tools to get your business processing cards immediately.</p>
@@ -1560,7 +1614,7 @@ export default function Home() {
               </div>
 
               {/* Plus */}
-              <div className="plan-card featured">
+              <div className="plan-card featured animate-on-scroll" data-dir="up" data-delay="1">
                 <span className="plan-featured-tag">Recommended</span>
                 <h3 className="plan-name">Square Plus</h3>
                 <div className="plan-price">$49<span>/location</span></div>
@@ -1573,11 +1627,11 @@ export default function Home() {
                   <li>Unlocked KDS and Kiosk app add-ons</li>
                   <li>Priority customer support access</li>
                 </ul>
-                <button className="btn primary" onClick={() => navigateTo("contact")}>Get Plus Config</button>
+                <button className="btn primary" onClick={() => navigateTo("contact")}>Get Plus Configuration</button>
               </div>
 
               {/* Premium */}
-              <div className="plan-card">
+              <div className="plan-card animate-on-scroll" data-dir="right" data-delay="2">
                 <h3 className="plan-name">Square Premium</h3>
                 <div className="plan-price">Custom<span>/custom pricing</span></div>
                 <p style={{ fontSize: "0.85rem", marginBottom: "1.5rem" }}>For high-volume merchants processing over $250k/year.</p>
@@ -1607,7 +1661,7 @@ export default function Home() {
         <div className={`spa-page page-dark ${currentPage === "contact" ? "active" : ""}`} id="contact">
           <section className="container">
             <div className="contact-grid">
-              <div className="contact-info-card">
+              <div className="contact-info-card animate-on-scroll" data-dir="left">
                 <span className="kicker">Direct Contact</span>
                 <h2>Talk to Dominique</h2>
                 <p style={{ marginTop: "0.75rem" }}>Get direct, human support for your merchant onboarding. We do not use anonymous ticketing systems — just real guidance over email.</p>
@@ -1634,7 +1688,7 @@ export default function Home() {
               </div>
 
               {/* Consultation Form */}
-              <div className="card" id="consultation-form">
+              <div className="card animate-on-scroll" data-dir="right" data-delay="1" id="consultation-form">
                 <h3>Request a consultation</h3>
                 <p style={{ fontSize: "0.9rem", marginBottom: "2rem" }}>Provide your details below to schedule your consultation call.</p>
                 
@@ -1784,12 +1838,11 @@ export default function Home() {
             <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap footer-logo">
               <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={60} height={60} className="logo-icon" />
               <span className="logo-text">
-                <span className="brand-title">PRO COMMERCE</span>
+                <span className="brand-title">ProCommerce Solutions</span>
                 <span className="brand-sub">Authorized Square Dealer</span>
               </span>
             </div>
             <p>Your trusted B2B partner for credit card processing, ATM placements, and official Square POS configuration consultations.</p>
-            <span className="tag">Authorized Square Dealer</span>
           </div>
           
           <div className="footer-links">
@@ -2296,6 +2349,12 @@ export default function Home() {
                     {productGallery.map((src, gi) => (
                       <img key={gi} src={src} alt={activeProductDetail.name + " shown in a real Square setup"} className={productSlide === gi ? "active" : ""} />
                     ))}
+                    <button type="button" className="gallery-nav prev" aria-label="Previous image" onClick={() => setProductSlide(s => (s - 1 + productGallery.length) % productGallery.length)}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
+                    <button type="button" className="gallery-nav next" aria-label="Next image" onClick={() => setProductSlide(s => (s + 1) % productGallery.length)}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
                     <div className="product-gallery-dots">
                       {productGallery.map((_, gi) => (
                         <button key={gi} type="button" aria-label={"Image " + (gi + 1)} className={productSlide === gi ? "active" : ""} onClick={() => setProductSlide(gi)}></button>
