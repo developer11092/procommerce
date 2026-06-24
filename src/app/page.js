@@ -1240,7 +1240,7 @@ export default function Home() {
               </div>
               <div>
                 <h4 style={{ marginBottom: "0.25rem" }}>Official Square Hardware Catalog</h4>
-                <p style={{ fontSize: "0.85rem", marginBottom: 0, color: "var(--blue-dark)" }}>All hardware products showcased below are official Square devices. Clicking "View on Square" will redirect you to the official Square website in a new tab. Select "Get Recommendation" to request Dominique's review.</p>
+                <p style={{ fontSize: "0.85rem", marginBottom: 0, color: "var(--blue-dark)" }}>All hardware products showcased below are official Square devices. Clicking &quot;View Specs&quot; will open official device detail sheets. Select &quot;Get Recommendation&quot; to request Dominique&apos;s review.</p>
               </div>
             </div>
 
@@ -2438,7 +2438,7 @@ export default function Home() {
                       Open Square Store Checkout <ArrowUpRight size={16} />
                     </button>
                     <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", textAlign: "center", display: "block", marginTop: "0.25rem" }}>
-                      🔒 Security Note: Square's checkout domain blocks embedded framing. Clicking opens a secure window.
+                      🔒 Security Note: Square&apos;s checkout domain blocks embedded framing. Clicking opens a secure window.
                     </span>
                   </div>
                 </div>
