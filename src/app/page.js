@@ -50,23 +50,35 @@ const heroStagger = {
 };
 const hoverLift = { whileHover: { y: -3 }, whileTap: { scale: 0.97 } };
 
-// Magnetic button — cursor-following micro-interaction (Framer Motion springs)
-function MagBtn({ className, onClick, children, strength = 0.3 }) {
+// Magnetic button — cursor-following micro-interaction (Framer Motion springs).
+// The pull is clamped to a small radius so the button never travels out from
+// under the cursor (which used to cause an enter/leave flicker on hover).
+function MagBtn({ className, onClick, children, strength = 0.18, max = 8 }) {
   const ref = useRef(null);
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
-  const x = useSpring(mx, { stiffness: 280, damping: 18, mass: 0.4 });
-  const y = useSpring(my, { stiffness: 280, damping: 18, mass: 0.4 });
+  const x = useSpring(mx, { stiffness: 200, damping: 22, mass: 0.5 });
+  const y = useSpring(my, { stiffness: 200, damping: 22, mass: 0.5 });
+  const clamp = (v) => Math.max(-max, Math.min(max, v));
   const onMove = (e) => {
     const r = ref.current?.getBoundingClientRect();
     if (!r) return;
-    mx.set((e.clientX - r.left - r.width / 2) * strength);
-    my.set((e.clientY - r.top - r.height / 2) * strength);
+    mx.set(clamp((e.clientX - r.left - r.width / 2) * strength));
+    my.set(clamp((e.clientY - r.top - r.height / 2) * strength));
   };
   const reset = () => { mx.set(0); my.set(0); };
   return (
-    <motion.button ref={ref} className={className} onClick={onClick}
-      onMouseMove={onMove} onMouseLeave={reset} style={{ x, y }} whileTap={{ scale: 0.95 }}>
+    <motion.button
+      ref={ref}
+      type="button"
+      className={className}
+      onClick={onClick}
+      onPointerMove={(e) => { if (e.pointerType === "mouse") onMove(e); }}
+      onPointerLeave={reset}
+      onPointerUp={reset}
+      style={{ x, y }}
+      whileTap={{ scale: 0.97 }}
+    >
       {children}
     </motion.button>
   );
@@ -82,6 +94,11 @@ export default function Home() {
   const [isSurveyOpen, setIsSurveyOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  // Source for the shared video lightbox. Defaults to the setup walkthrough;
+  // the Square Plans page swaps in Square's own videos via openVideo().
+  const WALKTHROUGH_VIDEO = "https://drive.google.com/file/d/18Wbv1P9HwI35UsmNl-VUWRZFuQPAEl_c/preview";
+  const [videoSrc, setVideoSrc] = useState(WALKTHROUGH_VIDEO);
+  const [videoTitle, setVideoTitle] = useState("Walkthrough & Setup Video");
   const [activeProductDetail, setActiveProductDetail] = useState(null);
   const [surveyStep, setSurveyStep] = useState(1);
 
@@ -372,13 +389,8 @@ export default function Home() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileMenuOpen, isWelcomeOpen]);
 
-  // Auto-rotate the product spec gallery while the modal is open
-  useEffect(() => {
-    if (!isProductOpen || !activeProductDetail) return;
-    const len = (activeProductDetail.images || productGallery).length;
-    const id = setInterval(() => setProductSlide(s => (s + 1) % len), 1800);
-    return () => clearInterval(id);
-  }, [isProductOpen, activeProductDetail]);
+  // The product spec gallery is manually controlled (arrows / dots) — it does
+  // not auto-advance, so the viewer stays on whichever image they choose.
 
   const closeWelcome = () => {
     setIsWelcomeOpen(false);
@@ -669,7 +681,7 @@ export default function Home() {
     accessories: {
       name: "Square Accessories Kit",
       price: "From $89 one-time payment",
-      url: "https://squareup.com/us/en/hardware/accessories",
+      url: "https://squareup.com/shop/hardware/v2/us/en/products/accessories",
       desc: "Receipt printers, cash drawers, barcode scanners, and kitchen printers that complete a full countertop or kitchen setup.",
       specs: [
         "Receipt printers: Thermal and impact (kitchen) options",
@@ -696,12 +708,13 @@ export default function Home() {
   // back to a bundled local photo, so nothing ever appears broken.
   const stock = {
     about:      { src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
+    about2:     { src: "https://images.unsplash.com/photo-1556745753-b2904692b3cd?auto=format&fit=crop&w=1280&q=70", fb: "/retail_path.jpg" },
     consult:    { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
     statement:  { src: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1280&q=70", fb: "/cafe_path.jpg" },
     restaurant: { src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1280&q=70", fb: "/restaurant_path.jpg" },
     retail:     { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1280&q=70", fb: "/retail_path.jpg" },
     hardware:   { src: "https://images.unsplash.com/photo-1556745757-8d76bdb6984b?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
-    onboarding: { src: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1280&q=70", fb: "/cafe_path.jpg" },
+    onboarding: { src: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
     heroMain:   { src: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1280&q=75", fb: "/hero_pos_scene.jpg" },
     nRestaurant:{ src: "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=900&q=70", fb: "/restaurant_path.jpg" },
     nCafe:      { src: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=900&q=70", fb: "/cafe_path.jpg" },
@@ -720,6 +733,36 @@ export default function Home() {
     setIsProductOpen(false);
     setTimeout(() => setActiveProductDetail(null), 360);
   };
+
+  // Open the shared video lightbox with a specific source/title
+  const openVideo = (src, title) => {
+    setVideoSrc(src || WALKTHROUGH_VIDEO);
+    setVideoTitle(title || "Walkthrough & Setup Video");
+    setIsVideoModalOpen(true);
+  };
+
+  // Featured Square videos on the Plans page.
+  // NOTE: replace `src` with the exact Square video embed URLs you want to use
+  // (e.g. https://www.youtube.com/embed/VIDEO_ID). They default to the setup
+  // walkthrough so nothing ever appears broken until the real links are added.
+  const plansVideos = [
+    {
+      kicker: "Square in Action",
+      heading: "See how Square powers a busy counter",
+      body: "Watch how payments, orders, and reporting flow through one connected Square system — from the first tap to end-of-day totals.",
+      poster: stock.heroMain,
+      src: WALKTHROUGH_VIDEO,
+      title: "Square in Action"
+    },
+    {
+      kicker: "Up & Running Fast",
+      heading: "Get set up in minutes, not weeks",
+      body: "From creating your profile to taking your first payment, see how quickly a Square setup comes together with hands-on guidance from Pro Commerce Solutions.",
+      poster: stock.onboarding,
+      src: WALKTHROUGH_VIDEO,
+      title: "Getting Set Up with Square"
+    }
+  ];
 
   const addProductToCalculator = (productName) => {
     let key = "";
@@ -798,7 +841,7 @@ export default function Home() {
 
   const openSurveyWithPath = (path) => {
     let type = "Restaurant (table service)";
-    if (path === "cafe") type = "Restaurant (quick service)";
+    if (path === "cafe") type = "Cafés & QSR";
     if (path === "retail") type = "Retail";
     
     setSurveyForm(prev => ({ ...prev, businessType: type }));
@@ -887,7 +930,7 @@ export default function Home() {
       {/* Sticky Header */}
       <header className={`topbar ${scrolled ? "scrolled" : ""}`}>
         <div className="topbar-inner">
-          <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap">
+          <div className="logo-wrap">
             <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={56} height={56} className="logo-icon" priority />
             <span className="logo-text">
               <span className="brand-title">ProCommerce Solutions</span>
@@ -950,7 +993,7 @@ export default function Home() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </MagBtn>
                   <motion.button className="btn ghost" onClick={() => navigateTo("products", "calculator")} {...hoverLift}>Estimate Monthly Cost</motion.button>
-                  <button className="btn-video" onClick={() => setIsVideoModalOpen(true)}>
+                  <button className="btn-video" onClick={() => openVideo(WALKTHROUGH_VIDEO, "Walkthrough & Setup Video")}>
                     <span className="play"><Play size={13} fill="currentColor" /></span>
                     Watch Video
                   </button>
@@ -1181,6 +1224,7 @@ export default function Home() {
         {/* PAGE 2: ABOUT US */}
         <div className={`spa-page ${currentPage === "about" ? "active" : ""}`} id="about">
           <section className="container">
+            {/* Intro — part 1: who we are */}
             <div className="story-block">
               <div className="hero-text animate-on-scroll" data-dir="left">
                 <span className="kicker">Our Journey</span>
@@ -1188,8 +1232,6 @@ export default function Home() {
                 <div className="story-text">
                   <p>Welcome to Pro Commerce Solutions, your trusted partner in modern payment processing. We specialize in credit card processing, ATM machines, and state-of-the-art POS systems tailored specifically for small businesses. We focus on helping small businesses simplify how they accept payments, manage transactions, and prepare for long-term growth using Square-powered solutions.</p>
                   <p>Our mission is to revolutionize the way small businesses manage transactions by introducing innovative and trending solutions designed for the black business community. We understand the unique challenges faced by entrepreneurs in our community, and we are dedicated to empowering them with the latest technology and personalized support they need to thrive in today’s fast-paced digital economy.</p>
-                  <p>We understand that every business operates differently. A dine-in restaurant may need kitchen coordination and table-service tools. A fast-service concept may need speed, kiosks, and efficient checkout. A retail store may need strong front-counter flows, customer payments, and hardware that fits daily operations.</p>
-                  <p>That is why Dominique works as a practical advisor — not just a salesperson. We help business owners understand their options, choose the right setup, and move through onboarding with clarity and confidence — fostering growth, sustainability, and lasting impact for the community we serve.</p>
                 </div>
                 <div className="hero-actions" style={{ marginTop: "2rem" }}>
                   <button className="btn primary" onClick={() => navigateTo("contact")}>Request a Consultation</button>
@@ -1203,6 +1245,27 @@ export default function Home() {
                     <strong>Square-powered</strong>
                     <span>Payments built for small business</span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Intro — part 2: how we help (reversed layout, second image) */}
+            <div className="story-block reverse">
+              <div className="hero-image-container animate-on-scroll" data-dir="left">
+                <img src={stock.about2.src} onError={onImgError(stock.about2.fb)} alt="Small business owner serving customers at the counter" loading="lazy" />
+                <div className="hero-overlay">
+                  <div className="overlay-metric">
+                    <strong>Built around you</strong>
+                    <span>Configurations that fit how you operate</span>
+                  </div>
+                </div>
+              </div>
+              <div className="hero-text animate-on-scroll" data-dir="right" data-delay="1">
+                <span className="kicker">How We Help</span>
+                <h2>A setup built around how you operate</h2>
+                <div className="story-text">
+                  <p>We understand that every business operates differently. A dine-in restaurant may need kitchen coordination and table-service tools. A fast-service concept may need speed, kiosks, and efficient checkout. A retail store may need strong front-counter flows, customer payments, and hardware that fits daily operations.</p>
+                  <p>That is why Dominique works as a practical advisor — not just a salesperson. He helps business owners understand their options, choose the right setup, and move through onboarding with clarity and confidence — fostering growth, sustainability, and lasting impact for the community he serves.</p>
                 </div>
               </div>
             </div>
@@ -1248,11 +1311,11 @@ export default function Home() {
                 <span className="kicker">Meet the Founder</span>
                 <h2>Dominique Wright</h2>
                 <p className="founder-role">Founder &amp; CEO, Pro Commerce Solutions</p>
-                <p>As a dedicated payments professional, I am passionate about driving innovation and excellence in the financial sector. I founded Pro Commerce Solutions to provide businesses with streamlined payment solutions that enhance efficiency and customer experience.</p>
-                <p>In addition to my work at Pro Commerce Solutions, I serve as the CFO on the board of the nonprofit organization “It Takes A Village MN.” In this role, I leverage my financial expertise to help guide the organization’s mission to support and uplift our community.</p>
-                <p>A strong advocate for financial literacy, I am committed to empowering the next generation with essential money management skills. I facilitate financial literacy classes for children and young adults, ensuring they have the knowledge needed to thrive financially. I also co-authored “Nourish to Flourish,” a program that taught 14 young individuals about basic financial skills while promoting healthy food choices.</p>
-                <p>Through my work, I aim to inspire others to take charge of their financial futures and make informed decisions that enhance their quality of life.</p>
-                <p>Feel free to connect with me to learn more about my journey or to explore collaboration opportunities.</p>
+                <p>As a dedicated payments professional, Dominique is passionate about driving innovation and excellence in the financial sector. He founded Pro Commerce Solutions to provide businesses with streamlined payment solutions that enhance efficiency and customer experience.</p>
+                <p>In addition to his work at Pro Commerce Solutions, Dominique serves as the CFO on the board of the nonprofit organization “It Takes A Village MN.” In this role, he leverages his financial expertise to help guide the organization’s mission to support and uplift the community.</p>
+                <p>A strong advocate for financial literacy, he is committed to empowering the next generation with essential money management skills. He facilitates financial literacy classes for children and young adults, ensuring they have the knowledge needed to thrive financially. He also co-authored “Nourish to Flourish,” a program that taught 14 young individuals about basic financial skills while promoting healthy food choices.</p>
+                <p>Through his work, Dominique aims to inspire others to take charge of their financial futures and make informed decisions that enhance their quality of life.</p>
+                <p>Feel free to connect with him to learn more about his journey or to explore collaboration opportunities.</p>
                 <a href="#contact" onClick={() => navigateTo("contact")} className="btn primary" style={{ marginTop: "0.5rem" }}>Connect with Dominique</a>
               </div>
             </div>
@@ -1675,34 +1738,9 @@ export default function Home() {
 
         {/* PAGE 5: SQUARE PLANS */}
         <div className={`spa-page ${currentPage === "plans" ? "active" : ""}`} id="plans">
-          {/* What is Square — intro */}
-          <section className="container" style={{ paddingBottom: "1rem" }}>
-            <div className="section-header animate-on-scroll">
-              <span className="kicker">The Basics</span>
-              <h2>What is Square?</h2>
-              <p>Square is an all-in-one platform that helps businesses accept payments and run day-to-day operations. It brings together point-of-sale software, card readers and hardware, payment processing, and back-office tools — so you can sell in person, online, and on the go from one connected system.</p>
-            </div>
-            <div className="grid grid-3">
-              <div className="card animate-on-scroll" data-dir="left">
-                <div className="icon-circle"><CreditCard size={24} /></div>
-                <h3>Accept Payments</h3>
-                <p>Take tap, chip, and contactless cards, plus Apple Pay and Google Pay. Square handles the processing with clear per-transaction pricing and no long-term contracts.</p>
-              </div>
-              <div className="card animate-on-scroll" data-dir="up" data-delay="1">
-                <div className="icon-circle"><Settings size={24} /></div>
-                <h3>Run Your Business</h3>
-                <p>Manage inventory, staff, customers, and reporting from the POS. Add online ordering, invoices, loyalty, and gift cards as your needs grow — all in one ecosystem.</p>
-              </div>
-              <div className="card animate-on-scroll" data-dir="right" data-delay="2">
-                <div className="icon-circle"><TrendingUp size={24} /></div>
-                <h3>Scale With Confidence</h3>
-                <p>Start free and upgrade only when you need advanced features. Square grows with you — from a single counter to multiple locations — with hardware you can buy or finance.</p>
-              </div>
-            </div>
-          </section>
-
+          {/* 1) Square plans — the card grid comes first */}
           <section className="container">
-            <div className="section-header">
+            <div className="section-header animate-on-scroll">
               <span className="kicker">Compare Options</span>
               <h2>Select Your Square Plan</h2>
               <p>Choose the tier that fits your volume and scaling needs. Plus and Premium packages unlock advanced operations.</p>
@@ -1757,8 +1795,109 @@ export default function Home() {
                 <button className="btn ghost" onClick={() => navigateTo("contact")}>Contact For Premium</button>
               </div>
             </div>
+          </section>
 
-            <div className="official-note animate-on-scroll" style={{ marginTop: "4rem", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "2rem" }}>
+          {/* 2) What is Square — intro */}
+          <section className="container">
+            <div className="section-header animate-on-scroll">
+              <span className="kicker">The Basics</span>
+              <h2>What is Square?</h2>
+              <p>Square is an all-in-one platform that helps businesses accept payments and run day-to-day operations. It brings together point-of-sale software, card readers and hardware, payment processing, and back-office tools — so you can sell in person, online, and on the go from one connected system.</p>
+            </div>
+            <div className="grid grid-3">
+              <div className="card animate-on-scroll" data-dir="left">
+                <div className="icon-circle"><CreditCard size={24} /></div>
+                <h3>Accept Payments</h3>
+                <p>Take tap, chip, and contactless cards, plus Apple Pay and Google Pay. Square handles the processing with clear per-transaction pricing and no long-term contracts.</p>
+              </div>
+              <div className="card animate-on-scroll" data-dir="up" data-delay="1">
+                <div className="icon-circle"><Settings size={24} /></div>
+                <h3>Run Your Business</h3>
+                <p>Manage inventory, staff, customers, and reporting from the POS. Add online ordering, invoices, loyalty, and gift cards as your needs grow — all in one ecosystem.</p>
+              </div>
+              <div className="card animate-on-scroll" data-dir="right" data-delay="2">
+                <div className="icon-circle"><TrendingUp size={24} /></div>
+                <h3>Scale With Confidence</h3>
+                <p>Start free and upgrade only when you need advanced features. Square grows with you — from a single counter to multiple locations — with hardware you can buy or finance.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* 3) Square video #1 */}
+          <section className="container">
+            <div className="showcase-row">
+              <div
+                className="showcase-media video-poster animate-on-scroll"
+                data-dir="left"
+                role="button"
+                tabIndex={0}
+                onClick={() => openVideo(plansVideos[0].src, plansVideos[0].title)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") openVideo(plansVideos[0].src, plansVideos[0].title); }}
+              >
+                <img src={plansVideos[0].poster.src} onError={onImgError(plansVideos[0].poster.fb)} alt={plansVideos[0].heading} loading="lazy" />
+                <span className="video-play-btn"><Play size={26} fill="currentColor" /></span>
+              </div>
+              <div className="showcase-content animate-on-scroll" data-dir="right" data-delay="1">
+                <span className="kicker">{plansVideos[0].kicker}</span>
+                <h2>{plansVideos[0].heading}</h2>
+                <p>{plansVideos[0].body}</p>
+                <button className="btn primary" onClick={() => openVideo(plansVideos[0].src, plansVideos[0].title)}>
+                  <Play size={16} fill="currentColor" /> Watch the video
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* 4) Built for every kind of business */}
+          <section className="container">
+            <div className="showcase-row media-right">
+              <div className="showcase-content animate-on-scroll" data-dir="left">
+                <span className="kicker">One Platform, Every Counter</span>
+                <h2>Built for every kind of business</h2>
+                <p>Whether you run a full-service restaurant, a busy café, a quick-service counter, or a multi-location retail store, Square adapts to how you work — with the right software plan, hardware, and apps for your day.</p>
+                <ul className="showcase-list">
+                  <li><Check size={18} /> Restaurants: tableside ordering, KDS, and floor maps</li>
+                  <li><Check size={18} /> Cafés &amp; QSR: fast checkout, kiosks, and loyalty</li>
+                  <li><Check size={18} /> Retail: inventory, barcodes, and customer profiles</li>
+                  <li><Check size={18} /> Services: invoices, appointments, and on-the-go payments</li>
+                </ul>
+                <button className="btn primary" onClick={openSurvey}>Find My Square Setup</button>
+              </div>
+              <div className="showcase-media animate-on-scroll" data-dir="right" data-delay="1">
+                <img src={stock.showcase.src} onError={onImgError(stock.showcase.fb)} alt="Business owner using Square across different counters" loading="lazy" />
+              </div>
+            </div>
+          </section>
+
+          {/* 5) Square video #2 */}
+          <section className="container">
+            <div className="showcase-row media-right">
+              <div className="showcase-content animate-on-scroll" data-dir="left">
+                <span className="kicker">{plansVideos[1].kicker}</span>
+                <h2>{plansVideos[1].heading}</h2>
+                <p>{plansVideos[1].body}</p>
+                <button className="btn primary" onClick={() => openVideo(plansVideos[1].src, plansVideos[1].title)}>
+                  <Play size={16} fill="currentColor" /> Watch the video
+                </button>
+              </div>
+              <div
+                className="showcase-media video-poster animate-on-scroll"
+                data-dir="right"
+                data-delay="1"
+                role="button"
+                tabIndex={0}
+                onClick={() => openVideo(plansVideos[1].src, plansVideos[1].title)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") openVideo(plansVideos[1].src, plansVideos[1].title); }}
+              >
+                <img src={plansVideos[1].poster.src} onError={onImgError(plansVideos[1].poster.fb)} alt={plansVideos[1].heading} loading="lazy" />
+                <span className="video-play-btn"><Play size={26} fill="currentColor" /></span>
+              </div>
+            </div>
+          </section>
+
+          {/* 6) High-volume processing note */}
+          <section className="container">
+            <div className="official-note animate-on-scroll" style={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "2rem" }}>
               <div style={{ maxWidth: "750px" }}>
                 <h4>High-Volume Processing?</h4>
                 <p style={{ fontSize: "0.9rem", marginBottom: 0 }}>If your business processes over $250,000 annually, you qualify for custom payment processing rates. Upload your merchant statement and Dominique will build a custom rate proposal.</p>
@@ -1867,11 +2006,12 @@ export default function Home() {
                       <div className="form-group">
                         <label>Business Type</label>
                         <select 
-                          value={contactForm.businessType} 
+                          value={contactForm.businessType}
                           onChange={(e) => setContactForm(prev => ({ ...prev, businessType: e.target.value }))}
                         >
                           <option value="Restaurant (table service)">Restaurant (table service)</option>
                           <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                          <option value="Cafés & QSR">Cafés &amp; QSR</option>
                           <option value="Retail">Retail</option>
                           <option value="Other">Other</option>
                         </select>
@@ -1946,7 +2086,7 @@ export default function Home() {
       <footer>
         <div className="footer-top">
           <div className="footer-brand">
-            <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap footer-logo">
+            <div className="logo-wrap footer-logo">
               <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={60} height={60} className="logo-icon" />
               <span className="logo-text">
                 <span className="brand-title">ProCommerce Solutions</span>
@@ -2073,12 +2213,13 @@ export default function Home() {
                         <div className="form-group">
                           <label>Business Type *</label>
                           <select 
-                            value={surveyForm.businessType} 
+                            value={surveyForm.businessType}
                             onChange={(e) => setSurveyForm(prev => ({ ...prev, businessType: e.target.value }))}
                             required
                           >
                             <option value="Restaurant (table service)">Restaurant (table service)</option>
                             <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                            <option value="Cafés & QSR">Cafés &amp; QSR</option>
                             <option value="Retail">Retail</option>
                             <option value="Other">Other</option>
                           </select>
@@ -2286,6 +2427,7 @@ export default function Home() {
                     >
                       <option value="Restaurant (table service)">Restaurant (table service)</option>
                       <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                      <option value="Cafés & QSR">Cafés &amp; QSR</option>
                       <option value="Retail">Retail</option>
                       <option value="Services">Services</option>
                       <option value="Other">Other</option>
@@ -2419,7 +2561,7 @@ export default function Home() {
         <div className="modal-container video-modal" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
             <div>
-              <h3>Walkthrough & Setup Video</h3>
+              <h3>{videoTitle}</h3>
               <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Step-by-step Pro Commerce Solutions setup tutorial.</p>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -2438,13 +2580,13 @@ export default function Home() {
           <div className="modal-body" style={{ padding: 0, overflow: "hidden", background: "#000" }}>
             {isVideoModalOpen && (
               <div className="video-iframe-container">
-                <iframe 
-                  src="https://drive.google.com/file/d/18Wbv1P9HwI35UsmNl-VUWRZFuQPAEl_c/preview" 
-                  width="100%" 
-                  height="100%" 
-                  allow="autoplay; encrypted-media; picture-in-picture" 
+                <iframe
+                  src={videoSrc}
+                  width="100%"
+                  height="100%"
+                  allow="autoplay; encrypted-media; picture-in-picture"
                   allowFullScreen
-                  title="Pro Commerce Setup Walkthrough Video"
+                  title={videoTitle}
                   style={{ border: "none" }}
                   loading="lazy"
                 ></iframe>
@@ -2532,7 +2674,7 @@ export default function Home() {
           <button className="modal-close welcome-close" onClick={closeWelcome} aria-label="Close">&times;</button>
           <div className="welcome-grid">
             <div className="welcome-visual">
-              <Image src="/hero_pos_scene.jpg" alt="Modern Square POS setup" fill sizes="(max-width: 760px) 100vw, 45vw" />
+              <Image src="/cafe_path.jpg" alt="Welcoming local business counter powered by Square" fill sizes="(max-width: 760px) 100vw, 45vw" />
               <div className="welcome-visual-overlay">
                 <span className="welcome-badge"><span className="dot"></span>Authorized Square Dealer</span>
                 <h3>Let&apos;s build your perfect Square setup</h3>
@@ -2575,6 +2717,7 @@ export default function Home() {
                         <select value={surveyForm.businessType} onChange={(e) => setSurveyForm(prev => ({ ...prev, businessType: e.target.value }))}>
                           <option value="Restaurant (table service)">Restaurant (table service)</option>
                           <option value="Restaurant (quick service)">Restaurant (quick service)</option>
+                          <option value="Cafés & QSR">Cafés &amp; QSR</option>
                           <option value="Retail">Retail</option>
                           <option value="Other">Other</option>
                         </select>

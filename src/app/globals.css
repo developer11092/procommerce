@@ -911,6 +911,12 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   aspect-ratio: 4/5;
 }
 
+/* Reversed intro section — image on the left, text on the right */
+.story-block.reverse {
+  grid-template-columns: 1.15fr 0.85fr;
+  margin-top: 3.5rem;
+}
+
 .story-text {
   font-size: 1.02rem;
   color: var(--text-muted);
@@ -1076,8 +1082,59 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 .showcase-list li { display: flex; align-items: center; gap: 0.7rem; font-size: 0.98rem; color: var(--text-main); }
 .showcase-list li svg { color: var(--blue-primary); flex-shrink: 0; }
 
+/* Alternating layout — keeps the image visually on the right on desktop */
+.showcase-row.media-right .showcase-content { order: 1; }
+.showcase-row.media-right .showcase-media { order: 2; }
+
+/* Video poster (click to open the lightbox) */
+.video-poster { cursor: pointer; }
+.video-poster img { transition: transform 0.5s var(--ease); }
+.video-poster:hover img { transform: scale(1.05); }
+.video-poster::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(18, 28, 38, 0.05), rgba(18, 28, 38, 0.45));
+  transition: background 0.4s ease;
+}
+.video-poster:hover::before { background: linear-gradient(180deg, rgba(18, 28, 38, 0.1), rgba(18, 28, 38, 0.55)); }
+
+.video-play-btn {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 76px;
+  height: 76px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--blue-primary);
+  display: grid;
+  place-items: center;
+  padding-left: 4px;
+  box-shadow: 0 16px 40px -12px rgba(18, 28, 38, 0.6);
+  transition: transform 0.3s var(--ease), background 0.3s ease, color 0.3s ease;
+}
+.video-poster:hover .video-play-btn {
+  transform: translate(-50%, -50%) scale(1.08);
+  background: var(--blue-primary);
+  color: #fff;
+}
+.video-play-btn::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  animation: chatPing 2.6s ease-out infinite;
+}
+
 @media (max-width: 900px) {
   .showcase-row { grid-template-columns: 1fr; gap: 1.8rem; }
+  .showcase-row.media-right .showcase-content { order: 2; }
+  .showcase-row.media-right .showcase-media { order: 1; }
 }
 
 /* ===== Home: How we work ===== */
@@ -1538,14 +1595,16 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 .plan-info-note h4 { font-size: 0.95rem; margin-bottom: 0.25rem; }
 .plan-info-note p { font-size: 0.85rem; margin: 0; line-height: 1.55; }
 
-/* Sticky Summary Box (dark) */
+/* Sticky Summary Box — refined brand gradient (was pure black) */
 .summary-box {
   position: sticky;
   top: 100px;
-  background: #0A0A0A;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(71, 143, 204, 0.32) 0%, rgba(71, 143, 204, 0) 55%),
+    linear-gradient(165deg, #20303D 0%, #182634 48%, #121C26 100%);
   color: #fff;
-  border: none;
-  box-shadow: 0 30px 70px -28px rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(120, 170, 215, 0.18);
+  box-shadow: 0 30px 70px -30px rgba(18, 28, 38, 0.7);
   padding: 1.9rem;
   border-radius: 22px;
 }
@@ -1594,13 +1653,14 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 }
 
 .summary-details {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 13px;
-  padding: 1rem;
+  padding: 1.1rem;
   margin-top: 1.25rem;
-  max-height: 170px;
+  max-height: 230px;
   overflow-y: auto;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
 }
 
 .summary-details h5 {
@@ -2219,8 +2279,11 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 }
 
 .chat-head {
+  position: relative;
   padding: 1.15rem 1.3rem;
-  background: linear-gradient(135deg, #1C1C1E, #0A0A0A);
+  background:
+    radial-gradient(130% 120% at 88% -10%, rgba(71, 143, 204, 0.4) 0%, rgba(71, 143, 204, 0) 55%),
+    linear-gradient(135deg, #1C1C1E, #0A0A0A);
   color: var(--white);
   display: flex;
   justify-content: space-between;
@@ -2234,8 +2297,9 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(140deg, var(--blue-light), var(--blue-primary) 60%, var(--blue-dark));
+  border: none;
+  box-shadow: 0 6px 16px -6px rgba(71, 143, 204, 0.7);
   display: grid;
   place-items: center;
   color: #fff;
@@ -2266,25 +2330,29 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   100% { box-shadow: 0 0 0 0 rgba(65, 224, 139, 0); }
 }
 
+/* Clean, flat ghost icon — transparent by default (no embossed/sunken fill),
+   with a subtle rotate flourish on hover. */
 .chat-close {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.85);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: all 0.25s var(--ease);
   outline: none;
+  transition: all 0.25s var(--ease);
 }
 
 .chat-close:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
-  transform: rotate(90deg) scale(1.08);
+  transform: rotate(90deg) scale(1.05);
 }
+
+.chat-close:active { transform: rotate(90deg) scale(0.92); }
 
 .chat-body {
   flex: 1;
