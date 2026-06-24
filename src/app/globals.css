@@ -2055,10 +2055,14 @@ main {
   flex-direction: column;
   align-items: flex-end;
   gap: 1rem;
+  /* The container is transparent and (with the hidden panel) large; never let
+     it intercept taps — only the bubble and the open panel should. */
+  pointer-events: none;
 }
 
 .chat-bubble {
   position: relative;
+  pointer-events: auto;
   width: 62px;
   height: 62px;
   border-radius: 9999px;
