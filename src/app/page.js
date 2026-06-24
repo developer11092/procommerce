@@ -31,6 +31,24 @@ import {
   Sparkles,
   Play
 } from "lucide-react";
+import { motion } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+// Framer Motion entrance variant (used for the hero load-in sequence)
+const fadeUp = {
+  hidden: { opacity: 0, y: 26 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.75, ease: [0.2, 0.7, 0.2, 1] } }
+};
+const heroStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.08 } }
+};
+const hoverLift = { whileHover: { y: -3 }, whileTap: { scale: 0.97 } };
 
 export default function Home() {
   // --- STATE ---
@@ -225,86 +243,76 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // --- SCROLL ANIMATIONS / COUNT-UP / PARALLAX ---
+  // --- GSAP SCROLL ENGINE (reveals, parallax, count-ups, marquee, float) ---
   useEffect(() => {
     const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const root = document.documentElement;
 
-    // Directional scroll reveals
-    const scrollElements = document.querySelectorAll(".animate-on-scroll");
-    let observer = null;
     if (reduce) {
-      scrollElements.forEach(el => el.classList.add("visible"));
-    } else {
-      observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.08, rootMargin: "0px 0px -8% 0px" });
-      scrollElements.forEach(el => observer.observe(el));
-    }
-
-    // Animated count-up numbers
-    const counters = document.querySelectorAll("[data-count]");
-    const countUp = (el) => {
-      const target = Number(el.dataset.count) || 0;
-      const prefix = el.dataset.prefix || "";
-      const suffix = el.dataset.suffix || "";
-      const dur = 1300;
-      const start = performance.now();
-      const tick = (now) => {
-        const t = Math.min(1, (now - start) / dur);
-        const eased = 1 - Math.pow(1 - t, 3);
-        el.textContent = prefix + Math.round(target * eased).toLocaleString("en-US") + suffix;
-        if (t < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    };
-    let countObserver = null;
-    if (reduce) {
-      counters.forEach(el => {
+      root.classList.remove("gsap-ready");
+      document.querySelectorAll(".animate-on-scroll").forEach(el => { el.style.opacity = "1"; });
+      document.querySelectorAll("[data-count]").forEach(el => {
         el.textContent = (el.dataset.prefix || "") + Number(el.dataset.count).toLocaleString("en-US") + (el.dataset.suffix || "");
       });
-    } else {
-      countObserver = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting) { countUp(e.target); countObserver.unobserve(e.target); }
-        });
-      }, { threshold: 0.6 });
-      counters.forEach(el => countObserver.observe(el));
+      return;
     }
 
-    // Parallax drift on tagged elements
-    let onScroll = null;
-    if (!reduce) {
-      const pels = Array.from(document.querySelectorAll("[data-parallax]"));
-      let ticking = false;
-      onScroll = () => {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(() => {
-          const vh = window.innerHeight;
-          pels.forEach(el => {
-            const r = el.getBoundingClientRect();
-            if (r.bottom < -200 || r.top > vh + 200) { ticking = false; return; }
-            const speed = parseFloat(el.dataset.parallax) || 0;
-            const offset = (r.top + r.height / 2 - vh / 2) * speed;
-            el.style.transform = "translate3d(0," + offset.toFixed(1) + "px,0)";
-          });
-          ticking = false;
+    root.classList.add("gsap-ready");
+    const ctx = gsap.context(() => {
+      // Directional scroll reveals
+      gsap.utils.toArray(".animate-on-scroll").forEach((el) => {
+        const dir = el.getAttribute("data-dir");
+        const delay = (parseInt(el.getAttribute("data-delay") || "0", 10)) * 0.09;
+        const x = dir === "left" ? -64 : dir === "right" ? 64 : 0;
+        const y = (dir === "left" || dir === "right") ? 0 : 46;
+        gsap.set(el, { opacity: 0, x, y });
+        gsap.to(el, {
+          opacity: 1, x: 0, y: 0, duration: 1, ease: "power3.out", delay,
+          scrollTrigger: { trigger: el, start: "top 86%", once: true }
         });
-      };
-      window.addEventListener("scroll", onScroll, { passive: true });
-      onScroll();
-    }
+      });
 
-    return () => {
-      if (observer) observer.disconnect();
-      if (countObserver) countObserver.disconnect();
-      if (onScroll) window.removeEventListener("scroll", onScroll);
-    };
+      // Count-up numbers
+      gsap.utils.toArray("[data-count]").forEach((el) => {
+        const target = Number(el.dataset.count) || 0;
+        const prefix = el.dataset.prefix || "";
+        const suffix = el.dataset.suffix || "";
+        const obj = { v: 0 };
+        gsap.to(obj, {
+          v: target, duration: 1.6, ease: "power2.out",
+          scrollTrigger: { trigger: el, start: "top 90%", once: true },
+          onUpdate: () => { el.textContent = prefix + Math.round(obj.v).toLocaleString("en-US") + suffix; }
+        });
+      });
+
+      // Parallax drift (scrub) — skip the floating cards, they get a gentle float instead
+      gsap.utils.toArray("[data-parallax]").forEach((el) => {
+        if (el.classList.contains("float-card")) return;
+        const speed = parseFloat(el.getAttribute("data-parallax")) || 0;
+        gsap.fromTo(el, { y: 0 }, {
+          y: speed * -150, ease: "none",
+          scrollTrigger: { trigger: el.closest("section") || el, start: "top bottom", end: "bottom top", scrub: 0.6 }
+        });
+      });
+
+      // Gentle continuous float on hero cards
+      gsap.utils.toArray(".float-card").forEach((el, i) => {
+        gsap.to(el, { y: i % 2 ? 16 : -16, duration: 3 + i * 0.4, ease: "sine.inOut", repeat: -1, yoyo: true });
+      });
+
+      // Animated bars in the hero analytics card
+      gsap.utils.toArray(".fc-bars span").forEach((el, i) => {
+        gsap.from(el, { scaleY: 0.15, transformOrigin: "bottom", duration: 0.9, delay: 0.4 + i * 0.08, ease: "power3.out" });
+      });
+
+      // Seamless marquee
+      const track = document.querySelector(".marquee-track");
+      if (track) gsap.to(track, { xPercent: -50, duration: 28, ease: "none", repeat: -1 });
+
+      ScrollTrigger.refresh();
+    });
+
+    return () => ctx.revert();
   }, [currentPage]);
 
   // --- CHAT SCROLL TO BOTTOM EFFECT ---
@@ -826,28 +834,28 @@ export default function Home() {
             </svg>
 
             <div className="hero-wrap">
-              <div className="hero-text">
-                <div className="hero-badge">
+              <motion.div className="hero-text" initial="hidden" animate="show" variants={heroStagger}>
+                <motion.div className="hero-badge" variants={fadeUp}>
                   <span className="dot"></span>Authorized Square Dealer
-                </div>
+                </motion.div>
                 <h1 className="hero-title">
-                  <span className="line">Payments &amp; POS,</span>
-                  <span className="line">engineered for the way</span>
-                  <span className="line"><span className="accent">small business</span> moves.</span>
+                  <motion.span className="line" variants={fadeUp}>Payments &amp; POS,</motion.span>
+                  <motion.span className="line" variants={fadeUp}>engineered for the way</motion.span>
+                  <motion.span className="line" variants={fadeUp}><span className="accent">small business</span> moves.</motion.span>
                 </h1>
-                <p className="hero-desc">Custom Square POS configurations, transparent processing reviews, and 1-on-1 onboarding for entrepreneurs who want to scale — without the guesswork.</p>
-                <div className="hero-actions">
-                  <button className="btn primary" onClick={openSurvey}>
+                <motion.p className="hero-desc" variants={fadeUp}>Custom Square POS configurations, transparent processing reviews, and 1-on-1 onboarding for entrepreneurs who want to scale — without the guesswork.</motion.p>
+                <motion.div className="hero-actions" variants={fadeUp}>
+                  <motion.button className="btn primary" onClick={openSurvey} {...hoverLift}>
                     Get Started
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  </button>
-                  <button className="btn ghost" onClick={() => navigateTo("products", "calculator")}>Estimate Monthly Cost</button>
+                  </motion.button>
+                  <motion.button className="btn ghost" onClick={() => navigateTo("products", "calculator")} {...hoverLift}>Estimate Monthly Cost</motion.button>
                   <button className="btn-video" onClick={() => setIsVideoModalOpen(true)}>
                     <span className="play"><Play size={13} fill="currentColor" /></span>
                     Watch Video
                   </button>
-                </div>
-                <div className="hero-stats">
+                </motion.div>
+                <motion.div className="hero-stats" variants={fadeUp}>
                   <div className="hero-stat">
                     <strong>$0/mo</strong>
                     <span>Square free software</span>
@@ -862,8 +870,8 @@ export default function Home() {
                     <strong>No</strong>
                     <span>Long-term contracts</span>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
               {/* animated composition */}
               <div className="hero-visual">
