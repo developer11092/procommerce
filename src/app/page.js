@@ -322,6 +322,13 @@ export default function Home() {
     return () => clearTimeout(t);
   }, []);
 
+  // Lock background scroll while the mobile menu (or welcome popup) is open
+  useEffect(() => {
+    const lock = mobileMenuOpen || isWelcomeOpen;
+    document.body.style.overflow = lock ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen, isWelcomeOpen]);
+
   // Auto-rotate the product spec gallery while the modal is open
   useEffect(() => {
     if (!isProductOpen) return;
@@ -757,7 +764,7 @@ export default function Home() {
       <header className={`topbar ${scrolled ? "scrolled" : ""}`}>
         <div className="topbar-inner">
           <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap">
-            <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={42} height={42} className="logo-icon" priority />
+            <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={56} height={56} className="logo-icon" priority />
             <span className="logo-text">
               <span className="brand-title">PRO COMMERCE</span>
               <span className="brand-sub">Authorized Square Dealer</span>
@@ -779,7 +786,6 @@ export default function Home() {
               <button className={`nav-item ${currentPage === "services" ? "active" : ""}`} onClick={() => navigateTo("services")}>Services</button>
               <button className={`nav-item ${currentPage === "products" && currentSection !== "calculator" ? "active" : ""}`} onClick={() => navigateTo("products")}>Square Hardware</button>
               <button className={`nav-item ${currentPage === "plans" ? "active" : ""}`} onClick={() => navigateTo("plans")}>Square Plans</button>
-              <button className={`nav-item ${currentPage === "products" && currentSection === "calculator" ? "active" : ""}`} onClick={() => navigateTo("products", "calculator")}>Cost Calculator</button>
               <button className={`nav-item ${currentPage === "contact" ? "active" : ""}`} onClick={() => navigateTo("contact")}>Contact Us</button>
             </div>
             <button className="btn primary nav-cta" onClick={openSurvey}>Get Started</button>
@@ -1763,7 +1769,7 @@ export default function Home() {
         <div className="footer-top">
           <div className="footer-brand">
             <div onClick={() => navigateTo("home")} style={{ cursor: "pointer" }} className="logo-wrap footer-logo">
-              <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={42} height={42} className="logo-icon" />
+              <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={60} height={60} className="logo-icon" />
               <span className="logo-text">
                 <span className="brand-title">PRO COMMERCE</span>
                 <span className="brand-sub">Authorized Square Dealer</span>
