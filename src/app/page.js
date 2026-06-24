@@ -374,10 +374,11 @@ export default function Home() {
 
   // Auto-rotate the product spec gallery while the modal is open
   useEffect(() => {
-    if (!isProductOpen) return;
-    const id = setInterval(() => setProductSlide(s => (s + 1) % 4), 1800);
+    if (!isProductOpen || !activeProductDetail) return;
+    const len = (activeProductDetail.images || productGallery).length;
+    const id = setInterval(() => setProductSlide(s => (s + 1) % len), 1800);
     return () => clearInterval(id);
-  }, [isProductOpen]);
+  }, [isProductOpen, activeProductDetail]);
 
   const closeWelcome = () => {
     setIsWelcomeOpen(false);
@@ -481,7 +482,6 @@ export default function Home() {
       interestedPlan: selectedPlan,
       message: summaryText
     }));
-
     navigateTo("contact", "consultation-form");
   };
 
@@ -498,7 +498,13 @@ export default function Home() {
         "Connectivity: Wi-Fi, Ethernet, and USB accessory hub (5 ports)",
         "Software: Pre-installed Square POS software"
       ],
-      bestFor: "Full-service restaurants, retail boutiques, and busy counter-service hubs."
+      bestFor: "Full-service restaurants, retail boutiques, and busy counter-service hubs.",
+      images: [
+        "https://images.unsplash.com/photo-1556742044-3c52d6e88c62?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1556742031-c6961e8560b0?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1556740734-7f95cb6d6119?auto=format&fit=crop&w=600&q=80",
+        "/hero_pos_scene.jpg"
+      ]
     },
     handheld: {
       name: "Square Terminal / Handheld",
@@ -512,7 +518,13 @@ export default function Home() {
         "Connectivity: Wi-Fi, and optional USB hub attachment",
         "Payments: Contactless cards, Apple Pay, Google Pay, and Chip cards"
       ],
-      bestFor: "Tableside ordering, queue line busting, patio checkouts, and pop-up locations."
+      bestFor: "Tableside ordering, queue line busting, patio checkouts, and pop-up locations.",
+      images: [
+        "https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?auto=format&fit=crop&w=600&q=80",
+        "/restaurant_path.jpg"
+      ]
     },
     terminal: {
       name: "Square Terminal",
@@ -526,7 +538,13 @@ export default function Home() {
         "Connectivity: Wi-Fi, Ethernet, and accessory port via hub",
         "Security: Fully encrypted payments out-of-the-box"
       ],
-      bestFor: "Countertop checkouts, medical offices, professional services, and dine-in tables."
+      bestFor: "Countertop checkouts, medical offices, professional services, and dine-in tables.",
+      images: [
+        "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=600&q=80",
+        "/retail_path.jpg"
+      ]
     },
     stand: {
       name: "Square Stand",
@@ -540,7 +558,13 @@ export default function Home() {
         "Connectivity: USB accessory hub included with stand power adapter",
         "Power: Charges iPad continuously when plugged in"
       ],
-      bestFor: "Independent boutiques, cafes, fitness studios, and coffee shops."
+      bestFor: "Independent boutiques, cafes, fitness studios, and coffee shops.",
+      images: [
+        "https://images.unsplash.com/photo-1516216628859-9bccecab13ca?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1556742111-a301076d9d18?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1560264280-88b68371db39?auto=format&fit=crop&w=600&q=80",
+        "/cafe_path.jpg"
+      ]
     },
     kiosk: {
       name: "Square Kiosk",
@@ -554,7 +578,13 @@ export default function Home() {
         "Software: Requires Square Kiosk app subscription",
         "Security: Key-locked tamper-proof steel enclosure"
       ],
-      bestFor: "Quick-service cafes, bakeries, fast-food counters, and high-traffic order hubs."
+      bestFor: "Quick-service cafes, bakeries, fast-food counters, and high-traffic order hubs.",
+      images: [
+        "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80",
+        "/restaurant_path.jpg"
+      ]
     },
     reader: {
       name: "Square Reader (Contactless + Chip)",
@@ -568,7 +598,13 @@ export default function Home() {
         "Battery: Rechargeable battery via micro-USB",
         "Stand: Optional dock accessory available for countertop setups"
       ],
-      bestFor: "Mobile vendors, service contractors, taxi drivers, and entry-level merchants."
+      bestFor: "Mobile vendors, service contractors, taxi drivers, and entry-level merchants.",
+      images: [
+        "https://images.unsplash.com/photo-1562408590-e32931084e23?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1556741533-411cf82e4e24?auto=format&fit=crop&w=600&q=80",
+        "/hero_pos_scene.jpg"
+      ]
     },
     standMount: {
       name: "Square Stand Mount",
@@ -582,7 +618,13 @@ export default function Home() {
         "Cable management: Built-in routing for power and accessories",
         "Mounting: Optional VESA / wall-mount accessory available"
       ],
-      bestFor: "Cafes, boutiques, and counters that want a permanent, low-profile iPad checkout."
+      bestFor: "Cafes, boutiques, and counters that want a permanent, low-profile iPad checkout.",
+      images: [
+        "https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=80",
+        "/retail_path.jpg",
+        "/hero_pos_scene.jpg"
+      ]
     },
     dock: {
       name: "Square Dock for Square Handheld",
@@ -596,7 +638,13 @@ export default function Home() {
         "Connectivity: Keeps the device ready on Wi-Fi",
         "Use: Switch between countertop and mobile service instantly"
       ],
-      bestFor: "Businesses that run the Handheld both tableside and as a fixed register."
+      bestFor: "Businesses that run the Handheld both tableside and as a fixed register.",
+      images: [
+        "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1546054454-aa26e2b734c7?auto=format&fit=crop&w=600&q=80",
+        "/cafe_path.jpg",
+        "/restaurant_path.jpg"
+      ]
     },
     magReader: {
       name: "Square Reader for Magstripe",
@@ -610,7 +658,13 @@ export default function Home() {
         "Power: No charging required — draws from the device",
         "Backup: A handy spare for any mobile setup"
       ],
-      bestFor: "Entry-level sellers, markets, and backup swipe payments on the go."
+      bestFor: "Entry-level sellers, markets, and backup swipe payments on the go.",
+      images: [
+        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1556741533-6e6a62bd8b49?auto=format&fit=crop&w=600&q=80",
+        "/hero_pos_scene.jpg",
+        "/retail_path.jpg"
+      ]
     },
     accessories: {
       name: "Square Accessories Kit",
@@ -624,7 +678,13 @@ export default function Home() {
         "Kitchen printers: Send tickets to the line via KDS or paper",
         "Compatibility: Works with Square Register, Stand, and Terminal"
       ],
-      bestFor: "Retailers and restaurants building out a complete countertop or kitchen station."
+      bestFor: "Retailers and restaurants building out a complete countertop or kitchen station.",
+      images: [
+        "https://images.unsplash.com/photo-1556742208-999815fca738?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=600&q=80",
+        "/hero_pos_scene.jpg"
+      ]
     }
   };
 
@@ -852,7 +912,10 @@ export default function Home() {
               <button className={`nav-item ${currentPage === "plans" ? "active" : ""}`} onClick={() => navigateTo("plans")}>Square Plans</button>
               <button className={`nav-item ${currentPage === "contact" ? "active" : ""}`} onClick={() => navigateTo("contact")}>Contact Us</button>
             </div>
-            <MagBtn className="btn primary nav-cta" onClick={openSurvey}>Get Started</MagBtn>
+            <MagBtn className="btn primary nav-cta" onClick={openSurvey}>
+              Get Started
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </MagBtn>
           </nav>
         </div>
       </header>
@@ -1104,7 +1167,10 @@ export default function Home() {
                 <h2>Let&apos;s build the right Square setup for your business</h2>
                 <p>Get a free, no-obligation recommendation tailored to how you actually operate.</p>
                 <div className="hero-actions" style={{ justifyContent: "center" }}>
-                  <button className="btn primary" onClick={openSurvey}>Get Started</button>
+                  <button className="btn primary" onClick={openSurvey}>
+                    Get Started
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
                   <button className="btn ghost" onClick={() => navigateTo("products", "calculator")}>Estimate Monthly Cost</button>
                 </div>
               </div>
@@ -2356,7 +2422,18 @@ export default function Home() {
               <h3>Walkthrough & Setup Video</h3>
               <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Step-by-step Pro Commerce Solutions setup tutorial.</p>
             </div>
-            <button className="modal-close" onClick={() => setIsVideoModalOpen(false)}>&times;</button>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <a 
+                href="https://drive.google.com/file/d/18Wbv1P9HwI35UsmNl-VUWRZFuQPAEl_c/preview" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="btn ghost small"
+                style={{ fontSize: "0.75rem", padding: "0.4rem 0.8rem", whiteSpace: "nowrap", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
+              >
+                Open in New Tab <ArrowUpRight size={12} />
+              </a>
+              <button className="modal-close" onClick={() => setIsVideoModalOpen(false)}>&times;</button>
+            </div>
           </div>
           <div className="modal-body" style={{ padding: 0, overflow: "hidden", background: "#000" }}>
             {isVideoModalOpen && (
@@ -2365,10 +2442,11 @@ export default function Home() {
                   src="https://drive.google.com/file/d/18Wbv1P9HwI35UsmNl-VUWRZFuQPAEl_c/preview" 
                   width="100%" 
                   height="100%" 
-                  allow="autoplay; encrypted-media" 
+                  allow="autoplay; encrypted-media; picture-in-picture" 
                   allowFullScreen
                   title="Pro Commerce Setup Walkthrough Video"
                   style={{ border: "none" }}
+                  loading="lazy"
                 ></iframe>
               </div>
             )}
@@ -2391,17 +2469,17 @@ export default function Home() {
               <div className="product-detail-wrap">
                 <div className="product-detail-visual">
                   <div className="product-gallery">
-                    {productGallery.map((src, gi) => (
+                    {(activeProductDetail.images || productGallery).map((src, gi) => (
                       <img key={gi} src={src} alt={activeProductDetail.name + " shown in a real Square setup"} className={productSlide === gi ? "active" : ""} />
                     ))}
-                    <button type="button" className="gallery-nav prev" aria-label="Previous image" onClick={() => setProductSlide(s => (s - 1 + productGallery.length) % productGallery.length)}>
+                    <button type="button" className="gallery-nav prev" aria-label="Previous image" onClick={() => setProductSlide(s => (s - 1 + (activeProductDetail.images || productGallery).length) % (activeProductDetail.images || productGallery).length)}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </button>
-                    <button type="button" className="gallery-nav next" aria-label="Next image" onClick={() => setProductSlide(s => (s + 1) % productGallery.length)}>
+                    <button type="button" className="gallery-nav next" aria-label="Next image" onClick={() => setProductSlide(s => (s + 1) % (activeProductDetail.images || productGallery).length)}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </button>
                     <div className="product-gallery-dots">
-                      {productGallery.map((_, gi) => (
+                      {(activeProductDetail.images || productGallery).map((_, gi) => (
                         <button key={gi} type="button" aria-label={"Image " + (gi + 1)} className={productSlide === gi ? "active" : ""} onClick={() => setProductSlide(gi)}></button>
                       ))}
                     </div>
