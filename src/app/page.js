@@ -31,7 +31,7 @@ import {
   Sparkles,
   Play
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useSpring, useMotionValue } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -49,6 +49,28 @@ const heroStagger = {
   show: { transition: { staggerChildren: 0.09, delayChildren: 0.08 } }
 };
 const hoverLift = { whileHover: { y: -3 }, whileTap: { scale: 0.97 } };
+
+// Magnetic button — cursor-following micro-interaction (Framer Motion springs)
+function MagBtn({ className, onClick, children, strength = 0.3 }) {
+  const ref = useRef(null);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const x = useSpring(mx, { stiffness: 280, damping: 18, mass: 0.4 });
+  const y = useSpring(my, { stiffness: 280, damping: 18, mass: 0.4 });
+  const onMove = (e) => {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r) return;
+    mx.set((e.clientX - r.left - r.width / 2) * strength);
+    my.set((e.clientY - r.top - r.height / 2) * strength);
+  };
+  const reset = () => { mx.set(0); my.set(0); };
+  return (
+    <motion.button ref={ref} className={className} onClick={onClick}
+      onMouseMove={onMove} onMouseLeave={reset} style={{ x, y }} whileTap={{ scale: 0.95 }}>
+      {children}
+    </motion.button>
+  );
+}
 
 export default function Home() {
   // --- STATE ---
@@ -243,6 +265,10 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Scroll-progress indicator (Framer Motion)
+  const { scrollYProgress } = useScroll();
+  const progressX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
+
   // --- GSAP SCROLL ENGINE (reveals, parallax, count-ups, marquee, float) ---
   useEffect(() => {
     const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -304,6 +330,14 @@ export default function Home() {
       gsap.utils.toArray(".fc-bars span").forEach((el, i) => {
         gsap.from(el, { scaleY: 0.15, transformOrigin: "bottom", duration: 0.9, delay: 0.4 + i * 0.08, ease: "power3.out" });
       });
+
+      // Cinematic clip-path reveal on the hero photo
+      const heroImg = document.querySelector(".hero-photo img");
+      if (heroImg) {
+        gsap.fromTo(heroImg,
+          { clipPath: "inset(0 0 100% 0)", scale: 1.12 },
+          { clipPath: "inset(0 0 0% 0)", scale: 1, duration: 1.3, ease: "power3.out", delay: 0.15 });
+      }
 
       // Seamless marquee
       const track = document.querySelector(".marquee-track");
@@ -787,6 +821,9 @@ export default function Home() {
 
   return (
     <>
+      {/* Scroll progress indicator */}
+      <motion.div className="scroll-progress" style={{ scaleX: progressX }} />
+
       {/* Sticky Header */}
       <header className={`topbar ${scrolled ? "scrolled" : ""}`}>
         <div className="topbar-inner">
@@ -815,7 +852,7 @@ export default function Home() {
               <button className={`nav-item ${currentPage === "plans" ? "active" : ""}`} onClick={() => navigateTo("plans")}>Square Plans</button>
               <button className={`nav-item ${currentPage === "contact" ? "active" : ""}`} onClick={() => navigateTo("contact")}>Contact Us</button>
             </div>
-            <button className="btn primary nav-cta" onClick={openSurvey}>Get Started</button>
+            <MagBtn className="btn primary nav-cta" onClick={openSurvey}>Get Started</MagBtn>
           </nav>
         </div>
       </header>
@@ -845,10 +882,10 @@ export default function Home() {
                 </h1>
                 <motion.p className="hero-desc" variants={fadeUp}>Custom Square POS configurations, transparent processing reviews, and 1-on-1 onboarding for entrepreneurs who want to scale — without the guesswork.</motion.p>
                 <motion.div className="hero-actions" variants={fadeUp}>
-                  <motion.button className="btn primary" onClick={openSurvey} {...hoverLift}>
+                  <MagBtn className="btn primary" onClick={openSurvey}>
                     Get Started
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  </motion.button>
+                  </MagBtn>
                   <motion.button className="btn ghost" onClick={() => navigateTo("products", "calculator")} {...hoverLift}>Estimate Monthly Cost</motion.button>
                   <button className="btn-video" onClick={() => setIsVideoModalOpen(true)}>
                     <span className="play"><Play size={13} fill="currentColor" /></span>

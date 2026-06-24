@@ -127,7 +127,15 @@ main { flex: 1; position: relative; }
 .container { max-width: var(--maxw); margin: 0 auto; padding: clamp(4rem, 9vw, 9rem) var(--gutter); width: 100%; }
 
 .spa-page { display: none; }
-.spa-page.active { display: block; }
+.spa-page.active { display: block; animation: pageIn .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* Scroll-progress indicator */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--blue-deep), var(--blue-light));
+  transform-origin: 0 50%; z-index: 200;
+}
 
 .section-header { max-width: 760px; margin-bottom: clamp(2.5rem, 5vw, 4.5rem); }
 .section-header.left { margin-left: 0; }
