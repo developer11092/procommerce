@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Search,
@@ -10,10 +10,7 @@ import {
   Mail,
   User,
   Check,
-  X,
-  Menu,
   ShieldCheck,
-  ArrowUpRight,
   TrendingUp,
   Shield,
   Target,
@@ -24,7 +21,7 @@ import {
   Info,
   Play
 } from "lucide-react";
-import { motion, useScroll, useSpring, useMotionValue } from "framer-motion";
+import { motion, useScroll, useSpring } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -38,13 +35,17 @@ import {
   trustItems,
   hardwareDetails,
   hardwareBlurbs,
-  productMedia,
-  productGallery,
-  isVideoSrc
+  productMedia
 } from "../data/catalog";
 import { stock, onImgError, plansVideos, WALKTHROUGH_VIDEO } from "../data/site";
 import { submitLead } from "../lib/sheets";
 import ChatWidget from "../components/ChatWidget";
+import MagBtn from "../components/MagBtn";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import VideoModal from "../components/modals/VideoModal";
+import ProductModal from "../components/modals/ProductModal";
+import WelcomePopup from "../components/modals/WelcomePopup";
 
 // Framer Motion entrance variant (used for the hero load-in sequence)
 const fadeUp = {
@@ -56,40 +57,6 @@ const heroStagger = {
   show: { transition: { staggerChildren: 0.09, delayChildren: 0.08 } }
 };
 const hoverLift = { whileHover: { y: -3 }, whileTap: { scale: 0.97 } };
-
-// Magnetic button — cursor-following micro-interaction (Framer Motion springs).
-// The pull is clamped to a small radius so the button never travels out from
-// under the cursor (which used to cause an enter/leave flicker on hover).
-function MagBtn({ className, onClick, children, strength = 0.18, max = 8 }) {
-  const ref = useRef(null);
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const x = useSpring(mx, { stiffness: 200, damping: 22, mass: 0.5 });
-  const y = useSpring(my, { stiffness: 200, damping: 22, mass: 0.5 });
-  const clamp = (v) => Math.max(-max, Math.min(max, v));
-  const onMove = (e) => {
-    const r = ref.current?.getBoundingClientRect();
-    if (!r) return;
-    mx.set(clamp((e.clientX - r.left - r.width / 2) * strength));
-    my.set(clamp((e.clientY - r.top - r.height / 2) * strength));
-  };
-  const reset = () => { mx.set(0); my.set(0); };
-  return (
-    <motion.button
-      ref={ref}
-      type="button"
-      className={className}
-      onClick={onClick}
-      onPointerMove={(e) => { if (e.pointerType === "mouse") onMove(e); }}
-      onPointerLeave={reset}
-      onPointerUp={reset}
-      style={{ x, y }}
-      whileTap={{ scale: 0.97 }}
-    >
-      {children}
-    </motion.button>
-  );
-}
 
 export default function Home() {
   // --- STATE ---
@@ -665,40 +632,15 @@ export default function Home() {
       <motion.div className="scroll-progress" style={{ scaleX: progressX }} />
 
       {/* Sticky Header */}
-      <header className={`topbar ${scrolled ? "scrolled" : ""}`}>
-        <div className="topbar-inner">
-          <div className="logo-wrap">
-            <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={56} height={56} className="logo-icon" priority />
-            <span className="logo-text">
-              <span className="brand-title">ProCommerce Solutions</span>
-              <span className="brand-sub">Authorized Square Dealer</span>
-            </span>
-          </div>
-
-          <button 
-            className="mobile-toggle" 
-            aria-label="Toggle Navigation Menu" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-
-          <nav className={`nav-menu ${mobileMenuOpen ? "active" : ""}`}>
-            <div className="nav-links">
-              <button className={`nav-item ${currentPage === "home" ? "active" : ""}`} onClick={() => navigateTo("home")}>Home</button>
-              <button className={`nav-item ${currentPage === "about" ? "active" : ""}`} onClick={() => navigateTo("about")}>About Us</button>
-              <button className={`nav-item ${currentPage === "services" ? "active" : ""}`} onClick={() => navigateTo("services")}>Services</button>
-              <button className={`nav-item ${currentPage === "products" && currentSection !== "calculator" ? "active" : ""}`} onClick={() => navigateTo("products")}>Square Hardware</button>
-              <button className={`nav-item ${currentPage === "plans" ? "active" : ""}`} onClick={() => navigateTo("plans")}>Square Plans</button>
-              <button className={`nav-item ${currentPage === "contact" ? "active" : ""}`} onClick={() => navigateTo("contact")}>Contact Us</button>
-            </div>
-            <MagBtn className="btn primary nav-cta" onClick={openSurvey}>
-              Get Started
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </MagBtn>
-          </nav>
-        </div>
-      </header>
+      <Header
+        scrolled={scrolled}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+        currentPage={currentPage}
+        currentSection={currentSection}
+        navigateTo={navigateTo}
+        openSurvey={openSurvey}
+      />
 
       <main>
         {/* PAGE 1: HOME */}
@@ -1662,45 +1604,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer>
-        <div className="footer-top">
-          <div className="footer-brand">
-            <div className="logo-wrap footer-logo">
-              <Image src="/LogoIcon.png" alt="Pro Commerce Solutions" width={60} height={60} className="logo-icon" />
-              <span className="logo-text">
-                <span className="brand-title">ProCommerce Solutions</span>
-                <span className="brand-sub">Authorized Square Dealer</span>
-              </span>
-            </div>
-            <p>Your trusted B2B partner for credit card processing, ATM placements, and official Square POS configuration consultations.</p>
-          </div>
-          
-          <div className="footer-links">
-            <h4>Explore</h4>
-            <ul>
-              <li><button onClick={() => navigateTo("home")}>Home Page</button></li>
-              <li><button onClick={() => navigateTo("about")}>About Us</button></li>
-              <li><button onClick={() => navigateTo("services")}>Our Services</button></li>
-              <li><button onClick={() => navigateTo("products")}>Square Hardware</button></li>
-              <li><button onClick={() => navigateTo("plans")}>Square Plans</button></li>
-              <li><button onClick={() => navigateTo("products", "calculator")}>Cost Calculator</button></li>
-              <li><button onClick={() => navigateTo("contact")}>Contact Us</button></li>
-            </ul>
-          </div>
-
-          <div className="footer-contact">
-            <h4>Direct Contact</h4>
-            <p><strong>Dominique Wright</strong><br />Founder &amp; CEO, Pro Commerce Solutions</p>
-            <a href="mailto:procommercesolutions@gmail.com" className="footer-contact-item">
-              <Mail size={14} />
-              <span>procommercesolutions@gmail.com</span>
-            </a>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; 2026 Pro Commerce Solutions. Authorized dealer of Square products and services. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer navigateTo={navigateTo} />
 
       {/* MODAL: SURVEY MODAL */}
       <div className={`modal-overlay ${isSurveyOpen ? "show" : ""}`}>
@@ -2081,219 +1985,33 @@ export default function Home() {
       <ChatWidget onOpenUpload={openUploadModal} />
 
       {/* MODAL: WATCH VIDEO MODAL */}
-      <div className={`modal-overlay ${isVideoModalOpen ? "show" : ""}`} onClick={() => setIsVideoModalOpen(false)}>
-        <div className="modal-container video-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <div>
-              <h3>{videoTitle}</h3>
-              <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Step-by-step Pro Commerce Solutions setup tutorial.</p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <a
-                href={videoSrc}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn ghost small"
-                style={{ fontSize: "0.75rem", padding: "0.4rem 0.8rem", whiteSpace: "nowrap", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
-              >
-                Open in New Tab <ArrowUpRight size={12} />
-              </a>
-              <button className="modal-close" onClick={() => setIsVideoModalOpen(false)}>&times;</button>
-            </div>
-          </div>
-          <div className="modal-body" style={{ padding: 0, overflow: "hidden", background: "#000" }}>
-            {isVideoModalOpen && (
-              <div className="video-iframe-container">
-                {isVideoSrc(videoSrc) ? (
-                  <video src={videoSrc} controls autoPlay playsInline title={videoTitle} />
-                ) : (
-                  <iframe
-                    src={videoSrc}
-                    width="100%"
-                    height="100%"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                    title={videoTitle}
-                    style={{ border: "none" }}
-                    loading="lazy"
-                  ></iframe>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <VideoModal
+        open={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        src={videoSrc}
+        title={videoTitle}
+      />
 
       {/* MODAL: PRODUCT DETAIL MODAL */}
-      <div className={`modal-overlay ${isProductOpen ? "show" : ""}`} onClick={closeProduct}>
-        <div className="modal-container product-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <div>
-              <h3>Hardware Specifications</h3>
-              <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Official Square Device details and connectivity.</p>
-            </div>
-            <button className="modal-close" onClick={closeProduct}>&times;</button>
-          </div>
-          <div className="modal-body">
-            {activeProductDetail && (
-              <div className="product-detail-wrap">
-                <div className="product-detail-visual">
-                  {(() => {
-                    const media = activeProductDetail.images || productGallery;
-                    const len = media.length;
-                    const idx = ((productSlide % len) + len) % len;
-                    const src = media[idx];
-                    const single = len <= 1;
-                    return (
-                      <div className="product-gallery">
-                        {/* Only the active item is mounted — the real product files are
-                            large (some 5–6 MB), so we never load the whole set at once. */}
-                        {isVideoSrc(src) ? (
-                          <video
-                            key={src}
-                            className="active"
-                            src={src}
-                            controls
-                            playsInline
-                            preload="metadata"
-                          />
-                        ) : (
-                          <img
-                            key={src}
-                            className="active"
-                            src={src}
-                            alt={`${activeProductDetail.name} — image ${idx + 1} of ${len}`}
-                            onError={onImgError("/hero_pos_scene.jpg")}
-                          />
-                        )}
-
-                        {!single && (
-                          <>
-                            <button type="button" className="gallery-nav prev" aria-label="Previous item" onClick={() => setProductSlide(s => (s - 1 + len) % len)}>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                            </button>
-                            <button type="button" className="gallery-nav next" aria-label="Next item" onClick={() => setProductSlide(s => (s + 1) % len)}>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                            </button>
-                            <div className="product-gallery-dots">
-                              {media.map((m, gi) => (
-                                <button key={gi} type="button" aria-label={(isVideoSrc(m) ? "Video " : "Image ") + (gi + 1)} className={idx === gi ? "active" : ""} onClick={() => setProductSlide(gi)}></button>
-                              ))}
-                            </div>
-                            <span className="gallery-counter">{idx + 1} / {len}</span>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })()}
-                  <div className="product-detail-pricing" style={{ marginTop: "1.5rem", textAlign: "center" }}>
-                    <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>Official Price:</span>
-                    <strong style={{ fontSize: "1.35rem", color: "var(--charcoal-dark)" }}>{activeProductDetail.price}</strong>
-                  </div>
-                </div>
-                
-                <div className="product-detail-info">
-                  <h4 style={{ fontSize: "1.25rem", marginBottom: "0.5rem", color: "var(--charcoal-dark)", fontWeight: 700 }}>{activeProductDetail.name}</h4>
-                  <p style={{ fontSize: "0.95rem", color: "var(--text-main)", marginBottom: "1.5rem", lineHeight: "1.5" }}>{activeProductDetail.desc}</p>
-                  
-                  <div className="specs-section" style={{ marginBottom: "1.5rem" }}>
-                    <h5 style={{ textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: "0.5rem", fontWeight: 700 }}>Technical Specifications</h5>
-                    <ul style={{ listStyle: "disc", paddingLeft: "1.2rem", fontSize: "0.85rem", color: "var(--text-main)", lineHeight: "1.6" }}>
-                      {activeProductDetail.specs.map((spec, idx) => (
-                        <li key={idx} style={{ marginBottom: "0.4rem" }}>{spec}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div className="best-for-section" style={{ marginBottom: "2rem", background: "var(--blue-soft)", padding: "1rem", borderRadius: "var(--radius-md)", border: "1px solid var(--blue-soft-border)" }}>
-                    <h5 style={{ textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.05em", color: "var(--blue-dark)", marginBottom: "0.25rem", fontWeight: 700 }}>Best For</h5>
-                    <p style={{ fontSize: "0.85rem", color: "var(--blue-dark)", marginBottom: 0 }}>{activeProductDetail.bestFor}</p>
-                  </div>
-                  
-                  <div className="product-detail-actions" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    <button className="btn primary" style={{ width: "100%" }} onClick={() => addProductToCalculator(activeProductDetail.name)}>
-                      Add to Monthly Estimate
-                    </button>
-                    <button className="btn secondary" style={{ width: "100%" }} onClick={() => window.open(activeProductDetail.url, "_blank")}>
-                      Open Square Store Checkout <ArrowUpRight size={16} />
-                    </button>
-                    <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", textAlign: "center", display: "block", marginTop: "0.25rem" }}>
-                      🔒 Security Note: Square&apos;s checkout domain blocks embedded framing. Clicking opens a secure window.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <ProductModal
+        open={isProductOpen}
+        product={activeProductDetail}
+        slide={productSlide}
+        setSlide={setProductSlide}
+        onClose={closeProduct}
+        onAddToCalculator={addProductToCalculator}
+      />
 
       {/* WELCOME LEAD-CAPTURE POPUP (on load) */}
-      <div className={`modal-overlay ${isWelcomeOpen ? "show" : ""}`} onClick={closeWelcome}>
-        <div className="modal-container welcome-modal" onClick={(e) => e.stopPropagation()}>
-          <button className="modal-close welcome-close" onClick={closeWelcome} aria-label="Close">&times;</button>
-          <div className="welcome-grid">
-            <div className="welcome-visual">
-              <Image src="/pop-up.jpg" alt="Welcoming local business counter powered by Square" fill sizes="(max-width: 760px) 100vw, 45vw" />
-              <div className="welcome-visual-overlay">
-                <span className="welcome-badge"><span className="dot"></span>Authorized Square Dealer</span>
-                <h3>Let&apos;s build your perfect Square setup</h3>
-                <p>Tell us a little about your business and Pro Commerce Solutions will recommend the right POS, hardware, and onboarding path — free.</p>
-              </div>
-            </div>
-            <div className="welcome-form">
-              {welcomeSubmitted ? (
-                <div className="welcome-success">
-                  <div className="welcome-success-icon"><ShieldCheck size={34} /></div>
-                  <h3>You&apos;re all set!</h3>
-                  <p>Thanks{surveyForm.firstName ? `, ${surveyForm.firstName}` : ""}. The team at Pro Commerce Solutions will review your details and reach out shortly with tailored recommendations.</p>
-                  <button className="btn primary" style={{ width: "100%" }} onClick={closeWelcome}>Continue Exploring</button>
-                </div>
-              ) : (
-                <>
-                  <span className="kicker">Quick Start</span>
-                  <h3 style={{ marginBottom: "0.35rem" }}>Get a free recommendation</h3>
-                  <p style={{ fontSize: "0.88rem", marginBottom: "1.25rem" }}>It takes under a minute — no obligation.</p>
-                  <form onSubmit={handleWelcomeSubmit}>
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label>First name *</label>
-                        <input type="text" placeholder="First name" required value={surveyForm.firstName} onChange={(e) => setSurveyForm(prev => ({ ...prev, firstName: e.target.value }))} />
-                      </div>
-                      <div className="form-group">
-                        <label>Last name *</label>
-                        <input type="text" placeholder="Last name" required value={surveyForm.lastName} onChange={(e) => setSurveyForm(prev => ({ ...prev, lastName: e.target.value }))} />
-                      </div>
-                      <div className="form-group full">
-                        <label>Email *</label>
-                        <input type="email" placeholder="you@business.com" required value={surveyForm.email} onChange={(e) => setSurveyForm(prev => ({ ...prev, email: e.target.value }))} />
-                      </div>
-                      <div className="form-group full">
-                        <label>Phone <span style={{ color: "var(--text-faint)", fontWeight: 400 }}>(optional)</span></label>
-                        <input type="tel" placeholder="(000) 000-0000" value={surveyForm.phone} onChange={(e) => setSurveyForm(prev => ({ ...prev, phone: e.target.value }))} />
-                      </div>
-                      <div className="form-group full">
-                        <label>Business type</label>
-                        <select value={surveyForm.businessType} onChange={(e) => setSurveyForm(prev => ({ ...prev, businessType: e.target.value }))}>
-                          <option value="Restaurant (table service)">Restaurant (table service)</option>
-                          <option value="Restaurant (quick service)">Restaurant (quick service)</option>
-                          <option value="Cafés & QSR">Cafés &amp; QSR</option>
-                          <option value="Retail">Retail</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                    </div>
-                    <button type="submit" className="btn primary" style={{ width: "100%", marginTop: "1.1rem" }} disabled={loadingAction === "welcome"}>
-                      {loadingAction === "welcome" ? "Submitting..." : "Get My Recommendation"}
-                    </button>
-                    <button type="button" className="welcome-skip" onClick={closeWelcome}>Maybe later — just browsing</button>
-                  </form>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <WelcomePopup
+        open={isWelcomeOpen}
+        onClose={closeWelcome}
+        submitted={welcomeSubmitted}
+        onSubmit={handleWelcomeSubmit}
+        form={surveyForm}
+        setForm={setSurveyForm}
+        loadingAction={loadingAction}
+      />
     </>
   );
 }
