@@ -815,8 +815,18 @@ export default function Home() {
       "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-7.png",
       "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-8.png"
     ],
+    reader: [
+      "/Square%20product%20images/Square-Contactless-Chipreader/Contactless-Chipreader-1.avif",
+      "/Square%20product%20images/Square-Contactless-Chipreader/Contactless-Chipreader-2.avif",
+      "/Square%20product%20images/Square-Contactless-Chipreader/Contactless-Chipreader-3.avif",
+      "/Square%20product%20images/Square-Contactless-Chipreader/Contactless-Chipreader-4.avif",
+      "/Square%20product%20images/Square-Contactless-Chipreader/Contactless-Chipreader-5.avif"
+    ],
     standMount: [
       "/Square%20product%20images/Square-Stand-mount-Images/Square-Stand-mount-Images-1.avif",
+      "/Square%20product%20images/Square-Stand-mount-Images/Square-Stand-mount-Images-2.avif",
+      "/Square%20product%20images/Square-Stand-mount-Images/Square-Stand-mount-Images-3.avif",
+      "/Square%20product%20images/Square-Stand-mount-Images/Square-Stand-mount-Images-4.avif",
       "/Square%20product%20images/Square-Stand-mount-Images/Square-Stand-mount-Images-2.mp4"
     ],
     dock: [
@@ -838,12 +848,10 @@ export default function Home() {
       "/Square%20product%20images/Square-Accessories-Kit-Images/Square-Accessories-Kit-Images-3.webp"
     ]
   };
-  // Apply the real media over each product's placeholder gallery. The contactless
-  // "reader" has no dedicated folder, so it falls back to the generic local set.
+  // Apply the real media over each product's placeholder gallery.
   Object.keys(productMedia).forEach((k) => {
     if (hardwareDetails[k]) hardwareDetails[k].images = productMedia[k];
   });
-  if (hardwareDetails.reader) hardwareDetails.reader.images = productGallery;
 
   const isVideoSrc = (s) => /\.(mp4|webm|mov)$/i.test(s || "");
 
