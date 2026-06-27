@@ -10,7 +10,6 @@ import {
   Mail,
   User,
   Check,
-  Send,
   X,
   Menu,
   ShieldCheck,
@@ -23,7 +22,6 @@ import {
   ShoppingBag,
   Zap,
   Info,
-  Sparkles,
   Play
 } from "lucide-react";
 import { motion, useScroll, useSpring, useMotionValue } from "framer-motion";
@@ -45,7 +43,8 @@ import {
   isVideoSrc
 } from "../data/catalog";
 import { stock, onImgError, plansVideos, WALKTHROUGH_VIDEO } from "../data/site";
-import { submitLead, formatTranscript } from "../lib/sheets";
+import { submitLead } from "../lib/sheets";
+import ChatWidget from "../components/ChatWidget";
 
 // Framer Motion entrance variant (used for the hero load-in sequence)
 const fadeUp = {
@@ -188,15 +187,7 @@ export default function Home() {
     fileName: ""
   });
 
-  // Chatbot State
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState([
-    { sender: "bot", text: "Hi, welcome to Pro Commerce Solutions. I'm Dominique's B2B POS assistant. I can help you select hardware, estimate monthly costs, or configure Square setups." },
-    { sender: "bot", text: "What would you like to explore today?" }
-  ]);
-  const [isBotTyping, setIsBotTyping] = useState(false);
-  const chatBodyRef = useRef(null);
+  // The chatbot is a self-contained component (src/components/ChatWidget).
 
   // pricingMatrix, planInfo, trustItems are imported from ../data/catalog
 
@@ -391,12 +382,6 @@ export default function Home() {
     };
   }, [currentPage]);
 
-  // --- CHAT SCROLL TO BOTTOM EFFECT ---
-  useEffect(() => {
-    if (chatBodyRef.current) {
-      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
-    }
-  }, [chatMessages, isBotTyping]);
 
   // --- WELCOME POPUP ON FIRST LOAD (once per browser session) ---
   useEffect(() => {
@@ -656,70 +641,6 @@ export default function Home() {
   const openUploadModal = () => {
     setUploadSubmitSuccess(false);
     setIsUploadOpen(true);
-  };
-
-  // --- CHATBOT LOGIC ---
-  const sendChatMessage = () => {
-    if (!chatInput.trim()) return;
-    const userText = chatInput;
-    setChatInput("");
-    setChatMessages(prev => [...prev, { sender: "user", text: userText }]);
-
-    setIsBotTyping(true);
-
-    setTimeout(() => {
-      setIsBotTyping(false);
-      let reply = "I'm Dominique's B2B POS assistant. I can help configure your Square setup, estimate monthly costs, or submit a request for consultation. Would you like to schedule a free 1-on-1 session with us?";
-      const q = userText.toLowerCase();
-
-      if (q.includes("pos") || q.includes("square") || q.includes("system")) {
-        reply = "Square offers tailormade POS systems for Restaurants, Retailers, and service-based businesses. Would you like me to open our Business Survey so we can recommend the perfect custom hardware setup?";
-      } else if (q.includes("price") || q.includes("pricing") || q.includes("cost") || q.includes("estimate") || q.includes("hardware")) {
-        reply = "Our hardware financing starts from $14/mo (Square Stand) up to $44/mo (Square Register). You can use our Setup Estimator on the Products page or I can help collect a custom request here. What industry are you in?";
-      } else if (q.includes("restaurant") || q.includes("cafe") || q.includes("food")) {
-        reply = "For restaurants, we recommend combining Square Plus ($49/mo) with Register ($44/mo) and Handhelds ($37/mo) for tableside checkout. What is your business name?";
-      } else if (q.includes("retail") || q.includes("store") || q.includes("shop")) {
-        reply = "For retail operations, the Square Retail POS software manages inventory levels seamlessly. Would you like to schedule a custom statement review to compare rates?";
-      } else if (q.includes("upload") || q.includes("statement") || q.includes("rate") || q.includes("fee")) {
-        reply = "Uploading a processing statement is the fastest way to check your potential savings. Would you like me to open the secure statement uploader modal right now?";
-        setTimeout(() => openUploadModal(), 1500);
-      }
-
-      setChatMessages(prev => [...prev, { sender: "bot", text: reply }]);
-    }, 1000);
-  };
-
-  // Send the whole chat conversation to the team's Google Sheet (type: "chat").
-  const submitChatTranscript = () => {
-    const transcript = formatTranscript(chatMessages);
-    const emailMatch = transcript.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
-    submitLead("chat", { email: emailMatch ? emailMatch[0] : "", transcript });
-    setChatMessages(prev => [...prev, {
-      sender: "bot",
-      text: "Thanks! I've sent this conversation to the Pro Commerce Solutions team — Dominique will follow up by email shortly."
-    }]);
-  };
-
-  const chatReply = (text) => {
-    setChatMessages(prev => [...prev, { sender: "user", text }]);
-    setIsBotTyping(true);
-    
-    setTimeout(() => {
-      setIsBotTyping(false);
-      let reply = "Great choice. I can help qualify your business. Dominique Wright specializes in high-trust Square conversions. Would you like to launch the onboarding setup survey now?";
-      
-      const q = text.toLowerCase();
-      if (q.includes("pricing") || q.includes("hardware")) {
-        reply = "Understood. Our Setup Estimator on the Products page helps you calculate custom hardware configurations. Or, let me open our Business Survey modal to get a direct advisor review.";
-      } else if (q.includes("restaurant")) {
-        reply = "Perfect, for restaurant workflows we can pre-tag you for KDS integrations. Shall we launch the recommendation survey?";
-      } else if (q.includes("statement") || q.includes("rates")) {
-        reply = "Excellent. I will open the upload modal for your processing statement now so we can review the rates.";
-        setTimeout(() => openUploadModal(), 1500);
-      }
-
-      setChatMessages(prev => [...prev, { sender: "bot", text: reply }]);
-    }, 1000);
   };
 
   const handleStepNext = () => {
@@ -2156,64 +2077,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* CHATBOT ASSISTANT */}
-      <div className="chat-widget">
-        <div className={`chat-panel ${isChatOpen ? "show" : ""}`}>
-          <div className="chat-head">
-            <div className="chat-head-id">
-              <span className="chat-avatar"><Sparkles size={18} /></span>
-              <div>
-                <h4>Pro Commerce Assistant</h4>
-                <span className="chat-status"><span className="chat-status-dot"></span>Online · B2B POS guidance</span>
-              </div>
-            </div>
-            <button className="chat-close" onClick={() => setIsChatOpen(false)} aria-label="Close chat">
-              <X size={18} />
-            </button>
-          </div>
-          <div className="chat-body" id="chat-body" ref={chatBodyRef}>
-            {chatMessages.map((msg, idx) => (
-              <div key={idx} className={`chat-row ${msg.sender === "bot" ? "bot" : "user"}`}>
-                {msg.sender === "bot" && <span className="chat-msg-avatar"><Sparkles size={13} /></span>}
-                <div className={`chat-msg ${msg.sender === "bot" ? "bot" : "user"}`}>{msg.text}</div>
-              </div>
-            ))}
-
-            {/* Typing Indicator */}
-            {isBotTyping && (
-              <div className="chat-row bot">
-                <span className="chat-msg-avatar"><Sparkles size={13} /></span>
-                <div className="chat-msg bot chat-typing"><span></span><span></span><span></span></div>
-              </div>
-            )}
-
-            {!isBotTyping && chatMessages[chatMessages.length - 1].sender === "bot" && (
-              <div className="chat-quick-replies">
-                <button className="chat-quick-btn" onClick={() => chatReply("I need a Square POS system")}>Square POS System</button>
-                <button className="chat-quick-btn" onClick={() => chatReply("I want hardware pricing")}>Hardware Pricing</button>
-                <button className="chat-quick-btn" onClick={() => chatReply("I run a restaurant")}>Restaurant POS</button>
-                <button className="chat-quick-btn" onClick={() => chatReply("I want to upload a statement")}>Compare Rates</button>
-                <button className="chat-quick-btn" onClick={submitChatTranscript}>Send chat to the team</button>
-              </div>
-            )}
-          </div>
-          <div className="chat-foot">
-            <input
-              type="text"
-              placeholder="Type a message..."
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
-            />
-            <button onClick={sendChatMessage} aria-label="Send message">
-              <Send size={16} />
-            </button>
-          </div>
-        </div>
-        <button className="chat-bubble" onClick={() => setIsChatOpen(!isChatOpen)} aria-label="Open Chat Assistant">
-          {isChatOpen ? <X size={24} /> : <Sparkles size={24} />}
-        </button>
-      </div>
+      {/* CHATBOT ASSISTANT (self-contained: AI proxy + canned fallback + sheet logging) */}
+      <ChatWidget onOpenUpload={openUploadModal} />
 
       {/* MODAL: WATCH VIDEO MODAL */}
       <div className={`modal-overlay ${isVideoModalOpen ? "show" : ""}`} onClick={() => setIsVideoModalOpen(false)}>

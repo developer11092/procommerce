@@ -34,12 +34,38 @@ then submissions are logged to the browser console so the UX still works.
 6. Rebuild / redeploy the site. New submissions now append a row to the
    **Leads** tab (created automatically with headers on first write).
 
+## Conversations & the Summary tab
+
+- **Every chat conversation is captured**, not just explicit submits: the widget
+  logs the full transcript when the chat is closed, and uses `navigator.sendBeacon`
+  to capture an in-progress chat if the visitor closes the tab. Duplicate logging
+  is guarded so a conversation isn't recorded twice.
+- `Code.gs` maintains a **`Summary`** tab automatically on every write: total
+  submissions and a breakdown by type (contact / survey / statement / welcome /
+  chat) plus a last-updated timestamp.
+
+## AI chatbot (GPT-4o-mini)
+
+The chatbot can run on GPT-4o-mini. Because this is a static site, the OpenAI key
+must stay server-side, so the widget talks to a small proxy:
+
+1. Deploy [`serverless/chat-proxy.js`](../serverless/chat-proxy.js) to Vercel or
+   Netlify (Node function). Set `OPENAI_API_KEY` in that platform's env.
+2. Put the function URL in `.env.local`:
+   ```
+   NEXT_PUBLIC_CHAT_ENDPOINT=https://your-app.vercel.app/api/chat
+   ```
+3. Rebuild. The widget now answers with GPT-4o-mini (system prompt + pricing
+   facts live in `src/lib/chat.js`). If the endpoint is empty or errors, it
+   automatically falls back to the built-in keyword replies, so the chat never
+   breaks. Chat transcripts are still logged to the sheet as above.
+
 ## Notes
 
-- The browser sends the request with `mode: "no-cors"` and `text/plain` so it
+- The browser sends sheet requests with `mode: "no-cors"` and `text/plain` so it
   works around Apps Script's lack of CORS/preflight support. The response is
   opaque, so the UI optimistically shows success once the request is sent.
 - To change which columns are stored, edit the `HEADERS` array in `Code.gs`
   (and add the matching field to the form payload in `src/lib/sheets.js`).
-- Rotating the endpoint: redeploy the Apps Script (new version) and update the
-  env var. No code change required.
+- Rotating either endpoint: redeploy and update the env var. No code change
+  required.

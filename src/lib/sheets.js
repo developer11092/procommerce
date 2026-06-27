@@ -55,6 +55,26 @@ export async function submitLead(type, data = {}) {
   }
 }
 
+/**
+ * Fire-and-forget capture that survives page unload (uses sendBeacon).
+ * Used to log an in-progress chat conversation if the visitor closes the tab.
+ */
+export function beaconLead(type, data = {}) {
+  if (!ENDPOINT || typeof navigator === "undefined" || !navigator.sendBeacon) return false;
+  const payload = {
+    type,
+    submittedAt: new Date().toISOString(),
+    pageUrl: typeof window !== "undefined" ? window.location.href : "",
+    ...data
+  };
+  try {
+    const blob = new Blob([JSON.stringify(payload)], { type: "text/plain;charset=utf-8" });
+    return navigator.sendBeacon(ENDPOINT, blob);
+  } catch {
+    return false;
+  }
+}
+
 // Flatten a chat message array into a readable transcript for the sheet.
 export function formatTranscript(messages = []) {
   return messages
