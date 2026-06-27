@@ -794,7 +794,7 @@ export default function Home() {
     restaurant: { src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1280&q=70", fb: "/restaurant_path.jpg" },
     retail:     { src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1280&q=70", fb: "/retail_path.jpg" },
     hardware:   { src: "https://images.unsplash.com/photo-1556745757-8d76bdb6984b?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
-    onboarding: { src: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1280&q=70", fb: "/hero_pos_scene.jpg" },
+    onboarding: { src: "/square-onboarding.jpg", fb: "/hero_pos_scene.jpg" },
     heroMain:   { src: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1280&q=75", fb: "/hero_pos_scene.jpg" },
     nRestaurant:{ src: "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=900&q=70", fb: "/restaurant_path.jpg" },
     nCafe:      { src: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=900&q=70", fb: "/cafe_path.jpg" },
@@ -2786,7 +2786,7 @@ export default function Home() {
           <button className="modal-close welcome-close" onClick={closeWelcome} aria-label="Close">&times;</button>
           <div className="welcome-grid">
             <div className="welcome-visual">
-              <Image src="/cafe_path.jpg" alt="Welcoming local business counter powered by Square" fill sizes="(max-width: 760px) 100vw, 45vw" />
+              <Image src="/pop-up.jpg" alt="Welcoming local business counter powered by Square" fill sizes="(max-width: 760px) 100vw, 45vw" />
               <div className="welcome-visual-overlay">
                 <span className="welcome-badge"><span className="dot"></span>Authorized Square Dealer</span>
                 <h3>Let&apos;s build your perfect Square setup</h3>
