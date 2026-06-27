@@ -2,22 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { 
+import {
   Search,
   FileText,
   Settings,
   CreditCard,
   Mail,
-  User, 
-  Check, 
-  AlertCircle, 
-  Send, 
-  X, 
-  Menu, 
-  ShieldCheck, 
-  HelpCircle, 
-  ArrowRight, 
-  DollarSign, 
+  User,
+  Check,
+  Send,
+  X,
+  Menu,
+  ShieldCheck,
   ArrowUpRight,
   TrendingUp,
   Shield,
@@ -27,7 +23,6 @@ import {
   ShoppingBag,
   Zap,
   Info,
-  ChevronRight,
   Sparkles,
   Play
 } from "lucide-react";
@@ -509,11 +504,6 @@ export default function Home() {
 
   const totalMonthly = planMonthly + hardwareMonthly + kdsMonthly + kioskMonthly;
 
-  const changeLocations = (val) => {
-    const parsed = parseInt(val, 10);
-    setLocations(isNaN(parsed) || parsed < 1 ? 1 : parsed);
-  };
-
   // Stepper for locations (+/-)
   const bumpLocations = (delta) => setLocations(prev => Math.max(1, Math.min(99, prev + delta)));
 
@@ -567,13 +557,7 @@ export default function Home() {
         "Connectivity: Wi-Fi, Ethernet, and USB accessory hub (5 ports)",
         "Software: Pre-installed Square POS software"
       ],
-      bestFor: "Full-service restaurants, retail boutiques, and busy counter-service hubs.",
-      images: [
-        "https://images.unsplash.com/photo-1556742044-3c52d6e88c62?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1556742031-c6961e8560b0?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1556740734-7f95cb6d6119?auto=format&fit=crop&w=600&q=80",
-        "/hero_pos_scene.jpg"
-      ]
+      bestFor: "Full-service restaurants, retail boutiques, and busy counter-service hubs."
     },
     handheld: {
       name: "Square Terminal / Handheld",
@@ -587,13 +571,7 @@ export default function Home() {
         "Connectivity: Wi-Fi, and optional USB hub attachment",
         "Payments: Contactless cards, Apple Pay, Google Pay, and Chip cards"
       ],
-      bestFor: "Tableside ordering, queue line busting, patio checkouts, and pop-up locations.",
-      images: [
-        "https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?auto=format&fit=crop&w=600&q=80",
-        "/restaurant_path.jpg"
-      ]
+      bestFor: "Tableside ordering, queue line busting, patio checkouts, and pop-up locations."
     },
     terminal: {
       name: "Square Terminal",
@@ -607,13 +585,7 @@ export default function Home() {
         "Connectivity: Wi-Fi, Ethernet, and accessory port via hub",
         "Security: Fully encrypted payments out-of-the-box"
       ],
-      bestFor: "Countertop checkouts, medical offices, professional services, and dine-in tables.",
-      images: [
-        "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=600&q=80",
-        "/retail_path.jpg"
-      ]
+      bestFor: "Countertop checkouts, medical offices, professional services, and dine-in tables."
     },
     stand: {
       name: "Square Stand",
@@ -627,13 +599,7 @@ export default function Home() {
         "Connectivity: USB accessory hub included with stand power adapter",
         "Power: Charges iPad continuously when plugged in"
       ],
-      bestFor: "Independent boutiques, cafes, fitness studios, and coffee shops.",
-      images: [
-        "https://images.unsplash.com/photo-1516216628859-9bccecab13ca?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1556742111-a301076d9d18?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1560264280-88b68371db39?auto=format&fit=crop&w=600&q=80",
-        "/cafe_path.jpg"
-      ]
+      bestFor: "Independent boutiques, cafes, fitness studios, and coffee shops."
     },
     kiosk: {
       name: "Square Kiosk",
@@ -647,13 +613,7 @@ export default function Home() {
         "Software: Requires Square Kiosk app subscription",
         "Security: Key-locked tamper-proof steel enclosure"
       ],
-      bestFor: "Quick-service cafes, bakeries, fast-food counters, and high-traffic order hubs.",
-      images: [
-        "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80",
-        "/restaurant_path.jpg"
-      ]
+      bestFor: "Quick-service cafes, bakeries, fast-food counters, and high-traffic order hubs."
     },
     reader: {
       name: "Square Reader (Contactless + Chip)",
@@ -667,13 +627,7 @@ export default function Home() {
         "Battery: Rechargeable battery via micro-USB",
         "Stand: Optional dock accessory available for countertop setups"
       ],
-      bestFor: "Mobile vendors, service contractors, taxi drivers, and entry-level merchants.",
-      images: [
-        "https://images.unsplash.com/photo-1562408590-e32931084e23?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1556741533-411cf82e4e24?auto=format&fit=crop&w=600&q=80",
-        "/hero_pos_scene.jpg"
-      ]
+      bestFor: "Mobile vendors, service contractors, taxi drivers, and entry-level merchants."
     },
     standMount: {
       name: "Square Stand Mount",
@@ -687,13 +641,7 @@ export default function Home() {
         "Cable management: Built-in routing for power and accessories",
         "Mounting: Optional VESA / wall-mount accessory available"
       ],
-      bestFor: "Cafes, boutiques, and counters that want a permanent, low-profile iPad checkout.",
-      images: [
-        "https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=80",
-        "/retail_path.jpg",
-        "/hero_pos_scene.jpg"
-      ]
+      bestFor: "Cafes, boutiques, and counters that want a permanent, low-profile iPad checkout."
     },
     dock: {
       name: "Square Dock for Square Handheld",
@@ -707,13 +655,7 @@ export default function Home() {
         "Connectivity: Keeps the device ready on Wi-Fi",
         "Use: Switch between countertop and mobile service instantly"
       ],
-      bestFor: "Businesses that run the Handheld both tableside and as a fixed register.",
-      images: [
-        "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1546054454-aa26e2b734c7?auto=format&fit=crop&w=600&q=80",
-        "/cafe_path.jpg",
-        "/restaurant_path.jpg"
-      ]
+      bestFor: "Businesses that run the Handheld both tableside and as a fixed register."
     },
     magReader: {
       name: "Square Reader for Magstripe",
@@ -727,13 +669,7 @@ export default function Home() {
         "Power: No charging required — draws from the device",
         "Backup: A handy spare for any mobile setup"
       ],
-      bestFor: "Entry-level sellers, markets, and backup swipe payments on the go.",
-      images: [
-        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1556741533-6e6a62bd8b49?auto=format&fit=crop&w=600&q=80",
-        "/hero_pos_scene.jpg",
-        "/retail_path.jpg"
-      ]
+      bestFor: "Entry-level sellers, markets, and backup swipe payments on the go."
     },
     accessories: {
       name: "Square Accessories Kit",
@@ -747,18 +683,11 @@ export default function Home() {
         "Kitchen printers: Send tickets to the line via KDS or paper",
         "Compatibility: Works with Square Register, Stand, and Terminal"
       ],
-      bestFor: "Retailers and restaurants building out a complete countertop or kitchen station.",
-      images: [
-        "https://images.unsplash.com/photo-1556742208-999815fca738?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=600&q=80",
-        "/hero_pos_scene.jpg"
-      ]
+      bestFor: "Retailers and restaurants building out a complete countertop or kitchen station."
     }
   };
 
-  // Rotating gallery shown in the spec modal. Swap these for official Square
-  // product photo URLs any time — the modal cross-fades through whatever is here.
+  // Fallback gallery for any product without its own media (manual arrows/dots).
   const productGallery = ["/hero_pos_scene.jpg", "/restaurant_path.jpg", "/retail_path.jpg", "/cafe_path.jpg"];
 
   // Real Square product photos/videos committed under /public/Square product images.
