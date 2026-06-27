@@ -441,6 +441,28 @@ export default function Home() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileMenuOpen, isWelcomeOpen]);
 
+  // Autoplay the Plans-page videos (muted) the moment they scroll into view,
+  // and pause them when they leave. Users still have full controls to unmute.
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const vids = Array.from(document.querySelectorAll("video[data-autoplay]"));
+    if (!vids.length) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const v = entry.target;
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          v.muted = true;
+          const p = v.play();
+          if (p && typeof p.catch === "function") p.catch(() => {});
+        } else {
+          v.pause();
+        }
+      });
+    }, { threshold: [0, 0.5, 1] });
+    vids.forEach((v) => io.observe(v));
+    return () => io.disconnect();
+  }, [currentPage]);
+
   // The product spec gallery is manually controlled (arrows / dots) — it does
   // not auto-advance, so the viewer stays on whichever image they choose.
 
@@ -1788,7 +1810,7 @@ export default function Home() {
           <section className="container">
             <div className="showcase-row">
               <div className="showcase-media plans-video landscape animate-on-scroll" data-dir="left">
-                <video src={plansVideos[0].src} controls playsInline preload="metadata" />
+                <video src={plansVideos[0].src} data-autoplay muted controls playsInline preload="metadata" />
               </div>
               <div className="showcase-content animate-on-scroll" data-dir="right" data-delay="1">
                 <span className="kicker">{plansVideos[0].kicker}</span>
@@ -1828,7 +1850,7 @@ export default function Home() {
                 <p>{plansVideos[1].body}</p>
               </div>
               <div className="showcase-media plans-video portrait animate-on-scroll" data-dir="right" data-delay="1">
-                <video src={plansVideos[1].src} controls playsInline preload="metadata" />
+                <video src={plansVideos[1].src} data-autoplay muted controls playsInline preload="metadata" />
               </div>
             </div>
           </section>

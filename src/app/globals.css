@@ -123,6 +123,8 @@ a:hover {
 
 button {
   font-family: inherit;
+  border: none;
+  cursor: pointer;
 }
 
 /* ===== Keyframes (prototype motion system) ===== */
@@ -1592,14 +1594,17 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 
 /* Sticky Summary Box — refined brand gradient (was pure black) */
 /* Light summary box (matches the client prototype — clean white card, no black) */
+/* Dark summary box (client prefers this look) */
 .summary-box {
   position: sticky;
   top: 100px;
-  background: #fff;
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 14px 40px rgba(20, 38, 60, 0.08);
-  padding: 1.6rem;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(71, 143, 204, 0.32) 0%, rgba(71, 143, 204, 0) 55%),
+    linear-gradient(165deg, #20303D 0%, #182634 48%, #121C26 100%);
+  color: #fff;
+  border: 1px solid rgba(120, 170, 215, 0.18);
+  box-shadow: 0 30px 70px -30px rgba(18, 28, 38, 0.7);
+  padding: 1.9rem;
   border-radius: 22px;
 }
 
@@ -1608,8 +1613,8 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   font-size: 0.7rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--blue-primary);
-  margin-bottom: 1.1rem;
+  color: #9FC2E0;
+  margin-bottom: 1.2rem;
   border: none;
   padding: 0;
 }
@@ -1618,38 +1623,38 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.55rem 0;
+  padding: 0.4rem 0;
   font-size: 0.88rem;
-  color: var(--text-muted);
-  border-bottom: 1px dashed #E5E7EB;
+  color: #B7C4D2;
+  border: none;
 }
 
-.summary-row strong { color: var(--charcoal-dark); font-weight: 700; }
+.summary-row strong { color: #fff; font-weight: 600; }
 
 .summary-divider {
   height: 1px;
-  background: var(--border-color);
-  margin: 1rem 0;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 1.1rem 0;
 }
 
 .summary-row.total {
-  border-bottom: 0;
+  border: none;
   align-items: flex-end;
-  padding-top: 0.4rem;
+  padding-top: 0;
 }
 
-.summary-row.total span { font-size: 0.9rem; color: var(--text-muted); }
+.summary-row.total span { font-size: 0.88rem; color: #9FC2E0; }
 
 .summary-row.total strong {
   font-family: 'Outfit';
-  font-weight: 800;
+  font-weight: 700;
   font-size: 2rem;
-  color: var(--charcoal-dark);
+  color: #fff;
 }
 
 .summary-details {
-  background: #F7FBFE;
-  border: 1px solid var(--blue-soft-border);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 13px;
   padding: 1.1rem;
   margin-top: 1.25rem;
@@ -1663,7 +1668,7 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.66rem;
-  color: var(--blue-dark);
+  color: #9FC2E0;
   margin-bottom: 0.6rem;
 }
 
@@ -1674,7 +1679,7 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   padding-left: 0.95rem;
   position: relative;
   line-height: 1.5;
-  color: var(--text-muted);
+  color: #B7C4D2;
 }
 
 .summary-details li:last-child { margin-bottom: 0; }
@@ -1687,7 +1692,7 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--blue-primary);
+  background: var(--blue-light);
 }
 
 /* ===== Square Plans ===== */
