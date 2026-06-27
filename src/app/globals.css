@@ -53,6 +53,10 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* clip (not hidden) prevents mobile shrink-to-fit from decorative overflow
+     without turning <html> into a scroll container (keeps sticky working) */
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 body {
@@ -63,7 +67,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 ::selection {
@@ -1086,50 +1091,25 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 .showcase-row.media-right .showcase-content { order: 1; }
 .showcase-row.media-right .showcase-media { order: 2; }
 
-/* Video poster (click to open the lightbox) */
-.video-poster { cursor: pointer; }
-.video-poster img { transition: transform 0.5s var(--ease); }
-.video-poster:hover img { transform: scale(1.05); }
-.video-poster::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(180deg, rgba(18, 28, 38, 0.05), rgba(18, 28, 38, 0.45));
-  transition: background 0.4s ease;
+/* Inline Square videos on the Plans page (play directly, no lightbox) */
+.plans-video {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: #0B1623;
 }
-.video-poster:hover::before { background: linear-gradient(180deg, rgba(18, 28, 38, 0.1), rgba(18, 28, 38, 0.55)); }
-
-.video-play-btn {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 76px;
-  height: 76px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--blue-primary);
-  display: grid;
-  place-items: center;
-  padding-left: 4px;
-  box-shadow: 0 16px 40px -12px rgba(18, 28, 38, 0.6);
-  transition: transform 0.3s var(--ease), background 0.3s ease, color 0.3s ease;
+.plans-video video { display: block; width: 100%; height: 100%; }
+.plans-video.landscape { aspect-ratio: 16 / 9; }
+.plans-video.landscape video { object-fit: cover; }
+.plans-video.portrait {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 5;
+  max-height: 580px;
 }
-.video-poster:hover .video-play-btn {
-  transform: translate(-50%, -50%) scale(1.08);
-  background: var(--blue-primary);
-  color: #fff;
-}
-.video-play-btn::after {
-  content: "";
-  position: absolute;
-  inset: -10px;
-  border-radius: 9999px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  animation: chatPing 2.6s ease-out infinite;
-}
+.plans-video.portrait video { width: auto; max-width: 100%; height: 100%; object-fit: contain; }
 
 @media (max-width: 900px) {
   .showcase-row { grid-template-columns: 1fr; gap: 1.8rem; }
@@ -1303,13 +1283,28 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 1.5rem;
+  overflow: hidden;
 }
 
 .device-visual svg { max-height: 100%; max-width: 100%; }
 
+/* Real Square product photo filling the card thumbnail */
+.device-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 1;
+  transition: transform 0.4s var(--ease);
+}
+
+.hardware-card:hover .device-photo { transform: scale(1.04); }
+
 .official-badge {
   position: absolute;
+  z-index: 2;
   top: 1rem;
   left: 1rem;
   font-family: 'Inter', sans-serif;
@@ -1907,10 +1902,9 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 /* ===== Modals ===== */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(17, 24, 39, 0.45);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -2092,14 +2086,17 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 .video-iframe-container {
   width: 100%;
   aspect-ratio: 16 / 9;
+  max-height: 80vh;
   background: #000;
 }
 
-.video-iframe-container iframe {
+.video-iframe-container iframe,
+.video-iframe-container video {
   width: 100%;
   height: 100%;
   border: 0;
   display: block;
+  object-fit: contain;
 }
 
 .product-modal { max-width: 1000px; width: 96%; }

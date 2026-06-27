@@ -839,25 +839,23 @@ export default function Home() {
     setIsVideoModalOpen(true);
   };
 
-  // Featured Square videos on the Plans page.
-  // NOTE: replace `src` with the exact Square video embed URLs you want to use
-  // (e.g. https://www.youtube.com/embed/VIDEO_ID). They default to the setup
-  // walkthrough so nothing ever appears broken until the real links are added.
+  // Featured Square videos on the Plans page — official Square clips that play
+  // inline directly on the page (no lightbox).
   const plansVideos = [
     {
       kicker: "Square in Action",
       heading: "See how Square powers a busy counter",
       body: "Watch how payments, orders, and reporting flow through one connected Square system — from the first tap to end-of-day totals.",
-      poster: stock.heroMain,
-      src: WALKTHROUGH_VIDEO,
+      src: "https://pw-assets-production-c.squarecdn.com/video/1y4rpdqDQl2cMHnIE9ydbA/3b6c428c-9441-461f-b367-0433676a800e-en-1445_Durability_H264_16x9_enUS.mp4",
+      aspect: "16 / 9",
       title: "Square in Action"
     },
     {
       kicker: "Up & Running Fast",
       heading: "Get set up in minutes, not weeks",
       body: "From creating your profile to taking your first payment, see how quickly a Square setup comes together with hands-on guidance from Pro Commerce Solutions.",
-      poster: stock.onboarding,
-      src: WALKTHROUGH_VIDEO,
+      src: "https://videos.ctfassets.net/2d5q1td6cyxq/2U0pseFJrWAqn8Q54FM6N3/35ac3d622e0e4589f3e54455946755f9/PD07447_videobattery-bg-usen-9x16-compressed.mp4",
+      aspect: "9 / 16",
       title: "Getting Set Up with Square"
     }
   ];
@@ -1479,175 +1477,40 @@ export default function Home() {
 
             {/* Hardware Catalog */}
             <div className="grid grid-3 animate-on-scroll">
-              {/* Register */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Register visual"><rect x="40" y="35" width="160" height="90" rx="16" fill="#2F3438"/><rect x="58" y="52" width="124" height="55" rx="10" fill="#EAF6FD"/><circle cx="145" cy="80" r="13" fill="#50A8D8"/><rect x="225" y="50" width="72" height="86" rx="13" fill="#FFFFFF" stroke="#2F3438" strokeWidth="8"/><rect x="238" y="65" width="46" height="20" rx="5" fill="#EAF6FD"/><path d="M80 140h170" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Square Register</h3>
-                  <p>Complete countertop POS system with customer-facing display. Designed for high-volume retail or restaurant checkout.</p>
-                  <div className="price-line"><strong>$899 or $44/mo (24 mo. financing)</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.register)}>View Specs</button>
+              {[
+                { key: "register", title: "Square Register", desc: "Complete countertop POS system with customer-facing display. Designed for high-volume retail or restaurant checkout.", price: "$899 or $44/mo (24 mo. financing)" },
+                { key: "handheld", title: "Square Handheld", desc: "Compact, durable mobile terminal. Perfect for restaurant table ordering, line busting, patio checkouts, and staff on the move.", price: "$399 or $37/mo (12 mo. financing)" },
+                { key: "terminal", title: "Square Terminal", desc: "Compact card payment device with receipt printer built-in. Great for countertops or tableside receipt printing.", price: "$299 or $27/mo (12 mo. financing)" },
+                { key: "stand", title: "Square Stand", desc: "iPad countertop stand with contactless and chip reader built in. Turn an iPad into a sleek checkout monitor.", price: "$149 or $14/mo (12 mo. financing)" },
+                { key: "kiosk", title: "Square Kiosk", desc: "Customer self-service checkout hardware. Shorter lines and faster turnaround for quick-service counters and cafes.", price: "$149 or $14/mo (12 mo. financing)" },
+                { key: "reader", title: "Contactless & Chip Reader", desc: "Simple pocket-sized card reader. Pairs via Bluetooth to run card checkouts directly on your iOS or Android phone.", price: "$59 one-time payment" },
+                { key: "standMount", title: "Square Stand Mount", desc: "Low-profile countertop mount that locks an iPad in place for a clean, fixed checkout station.", price: "$149 one-time payment" },
+                { key: "dock", title: "Square Dock for Handheld", desc: "Charging dock that turns the Square Handheld into a stationary countertop terminal between mobile shifts.", price: "$99 one-time payment" },
+                { key: "magReader", title: "Reader for Magstripe", desc: "Ultra-affordable swipe reader that plugs into a phone or tablet for quick magstripe card payments.", price: "$10 one-time payment" },
+                { key: "accessories", title: "Accessories Kit", desc: "Receipt printers, cash drawers, barcode scanners, and kitchen printers to complete your countertop or kitchen setup.", price: "From $89 one-time payment" }
+              ].map((c) => (
+                <div className="hardware-card" key={c.key}>
+                  <div className="device-visual">
+                    <span className="official-badge">Official Hardware</span>
+                    <img
+                      className="device-photo"
+                      src={(productMedia[c.key] && productMedia[c.key][0]) || "/hero_pos_scene.jpg"}
+                      alt={c.title}
+                      loading="lazy"
+                      onError={onImgError("/hero_pos_scene.jpg")}
+                    />
+                  </div>
+                  <div className="hardware-body">
+                    <h3>{c.title}</h3>
+                    <p>{c.desc}</p>
+                    <div className="price-line"><strong>{c.price}</strong></div>
+                    <div className="square-links">
+                      <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
+                      <button className="btn secondary small" onClick={() => openProduct(hardwareDetails[c.key])}>View Specs</button>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Handheld */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Handheld visual"><rect x="130" y="22" width="100" height="138" rx="26" fill="#2F3438"/><rect x="145" y="44" width="70" height="72" rx="10" fill="#EAF6FD"/><circle cx="180" cy="135" r="13" fill="#50A8D8"/><path d="M88 150h184" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Square Handheld</h3>
-                  <p>Compact, durable mobile terminal. Perfect for restaurant table ordering, line busting, patio checkouts, and staff on the move.</p>
-                  <div className="price-line"><strong>$399 or $37/mo (12 mo. financing)</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.handheld)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Terminal */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Terminal visual"><rect x="105" y="25" width="150" height="130" rx="28" fill="#FFFFFF" stroke="#2F3438" strokeWidth="9"/><rect x="128" y="50" width="104" height="55" rx="10" fill="#EAF6FD"/><circle cx="180" cy="126" r="14" fill="#50A8D8"/><path d="M118 155h124" stroke="#CBD5E1" strokeWidth="8" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Square Terminal</h3>
-                  <p>Compact card payment device with receipt printer built-in. Great for countertops or tableside receipt printing.</p>
-                  <div className="price-line"><strong>$299 or $27/mo (12 mo. financing)</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.terminal)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stand */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Stand visual"><rect x="88" y="35" width="154" height="96" rx="20" fill="#2F3438"/><rect x="107" y="54" width="116" height="58" rx="10" fill="#EAF6FD"/><rect x="150" y="128" width="60" height="18" rx="8" fill="#50A8D8"/><path d="M115 154h130" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Square Stand</h3>
-                  <p>iPad countertop stand with contactless and chip reader built in. Turn an iPad into a sleek checkout monitor.</p>
-                  <div className="price-line"><strong>$149 or $14/mo (12 mo. financing)</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.stand)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Kiosk */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Kiosk visual"><rect x="115" y="25" width="130" height="95" rx="20" fill="#2F3438"/><rect x="135" y="45" width="90" height="52" rx="10" fill="#EAF6FD"/><rect x="160" y="118" width="40" height="34" rx="8" fill="#50A8D8"/><path d="M110 158h140" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Square Kiosk</h3>
-                  <p>Customer self-service checkout hardware. Shorter lines and faster turnaround for quick-service counters and cafes.</p>
-                  <div className="price-line"><strong>$149 or $14/mo (12 mo. financing)</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.kiosk)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Reader */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Reader contactless and chip visual"><rect x="120" y="40" width="120" height="100" rx="26" fill="#FFFFFF" stroke="#2F3438" strokeWidth="9"/><path d="M168 75c16 16 16 34 0 50M193 65c25 28 25 52 0 80" fill="none" stroke="#50A8D8" strokeWidth="9" strokeLinecap="round"/><path d="M118 154h124" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Contactless & Chip Reader</h3>
-                  <p>Simple pocket-sized card reader. Pairs via Bluetooth to run card checkouts directly on your iOS or Android phone.</p>
-                  <div className="price-line"><strong>$59 one-time payment</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.reader)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stand Mount */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Stand Mount visual"><rect x="95" y="30" width="170" height="104" rx="16" fill="#2F3438"/><rect x="114" y="48" width="132" height="68" rx="9" fill="#EAF6FD"/><rect x="150" y="132" width="60" height="14" rx="6" fill="#2F3438"/><path d="M120 150h120" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/><circle cx="180" cy="82" r="11" fill="#50A8D8"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Square Stand Mount</h3>
-                  <p>Low-profile countertop mount that locks an iPad in place for a clean, fixed checkout station.</p>
-                  <div className="price-line"><strong>$149 one-time payment</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.standMount)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dock for Handheld */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Dock for Handheld visual"><rect x="138" y="20" width="84" height="118" rx="20" fill="#2F3438"/><rect x="151" y="38" width="58" height="62" rx="8" fill="#EAF6FD"/><circle cx="180" cy="118" r="10" fill="#50A8D8"/><rect x="120" y="138" width="120" height="20" rx="9" fill="#C4CCD6"/><path d="M150 158h60" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Square Dock for Handheld</h3>
-                  <p>Charging dock that turns the Square Handheld into a stationary countertop terminal between mobile shifts.</p>
-                  <div className="price-line"><strong>$99 one-time payment</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.dock)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Magstripe Reader */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Reader for magstripe visual"><rect x="150" y="40" width="60" height="60" rx="10" fill="#2F3438"/><rect x="172" y="100" width="16" height="40" rx="6" fill="#2F3438"/><path d="M165 70h30" stroke="#50A8D8" strokeWidth="8" strokeLinecap="round"/><path d="M118 150h124" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Reader for Magstripe</h3>
-                  <p>Ultra-affordable swipe reader that plugs into a phone or tablet for quick magstripe card payments.</p>
-                  <div className="price-line"><strong>$10 one-time payment</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.magReader)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Accessories */}
-              <div className="hardware-card">
-                <div className="device-visual">
-                  <span className="official-badge">Official Hardware</span>
-                  <svg viewBox="0 0 360 180" role="img" aria-label="Square Accessories visual"><rect x="60" y="60" width="86" height="80" rx="10" fill="#2F3438"/><rect x="74" y="76" width="58" height="22" rx="4" fill="#EAF6FD"/><rect x="206" y="84" width="96" height="56" rx="10" fill="#FFFFFF" stroke="#2F3438" strokeWidth="8"/><rect x="222" y="100" width="64" height="10" rx="5" fill="#50A8D8"/><path d="M70 150h220" stroke="#CBD5E1" strokeWidth="10" strokeLinecap="round"/></svg>
-                </div>
-                <div className="hardware-body">
-                  <h3>Accessories Kit</h3>
-                  <p>Receipt printers, cash drawers, barcode scanners, and kitchen printers to complete your countertop or kitchen setup.</p>
-                  <div className="price-line"><strong>From $89 one-time payment</strong></div>
-                  <div className="square-links">
-                    <button className="btn ghost small" onClick={openSurvey}>Get Recommendation</button>
-                    <button className="btn secondary small" onClick={() => openProduct(hardwareDetails.accessories)}>View Specs</button>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
@@ -1921,27 +1784,16 @@ export default function Home() {
             </div>
           </section>
 
-          {/* 3) Square video #1 */}
+          {/* 3) Square video #1 (plays inline) */}
           <section className="container">
             <div className="showcase-row">
-              <div
-                className="showcase-media video-poster animate-on-scroll"
-                data-dir="left"
-                role="button"
-                tabIndex={0}
-                onClick={() => openVideo(plansVideos[0].src, plansVideos[0].title)}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") openVideo(plansVideos[0].src, plansVideos[0].title); }}
-              >
-                <img src={plansVideos[0].poster.src} onError={onImgError(plansVideos[0].poster.fb)} alt={plansVideos[0].heading} loading="lazy" />
-                <span className="video-play-btn"><Play size={26} fill="currentColor" /></span>
+              <div className="showcase-media plans-video landscape animate-on-scroll" data-dir="left">
+                <video src={plansVideos[0].src} controls playsInline preload="metadata" />
               </div>
               <div className="showcase-content animate-on-scroll" data-dir="right" data-delay="1">
                 <span className="kicker">{plansVideos[0].kicker}</span>
                 <h2>{plansVideos[0].heading}</h2>
                 <p>{plansVideos[0].body}</p>
-                <button className="btn primary" onClick={() => openVideo(plansVideos[0].src, plansVideos[0].title)}>
-                  <Play size={16} fill="currentColor" /> Watch the video
-                </button>
               </div>
             </div>
           </section>
@@ -1967,28 +1819,16 @@ export default function Home() {
             </div>
           </section>
 
-          {/* 5) Square video #2 */}
+          {/* 5) Square video #2 (plays inline, portrait) */}
           <section className="container">
             <div className="showcase-row media-right">
               <div className="showcase-content animate-on-scroll" data-dir="left">
                 <span className="kicker">{plansVideos[1].kicker}</span>
                 <h2>{plansVideos[1].heading}</h2>
                 <p>{plansVideos[1].body}</p>
-                <button className="btn primary" onClick={() => openVideo(plansVideos[1].src, plansVideos[1].title)}>
-                  <Play size={16} fill="currentColor" /> Watch the video
-                </button>
               </div>
-              <div
-                className="showcase-media video-poster animate-on-scroll"
-                data-dir="right"
-                data-delay="1"
-                role="button"
-                tabIndex={0}
-                onClick={() => openVideo(plansVideos[1].src, plansVideos[1].title)}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") openVideo(plansVideos[1].src, plansVideos[1].title); }}
-              >
-                <img src={plansVideos[1].poster.src} onError={onImgError(plansVideos[1].poster.fb)} alt={plansVideos[1].heading} loading="lazy" />
-                <span className="video-play-btn"><Play size={26} fill="currentColor" /></span>
+              <div className="showcase-media plans-video portrait animate-on-scroll" data-dir="right" data-delay="1">
+                <video src={plansVideos[1].src} controls playsInline preload="metadata" />
               </div>
             </div>
           </section>
@@ -2663,9 +2503,9 @@ export default function Home() {
               <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>Step-by-step Pro Commerce Solutions setup tutorial.</p>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <a 
-                href="https://drive.google.com/file/d/18Wbv1P9HwI35UsmNl-VUWRZFuQPAEl_c/preview" 
-                target="_blank" 
+              <a
+                href={videoSrc}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="btn ghost small"
                 style={{ fontSize: "0.75rem", padding: "0.4rem 0.8rem", whiteSpace: "nowrap", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
@@ -2678,16 +2518,20 @@ export default function Home() {
           <div className="modal-body" style={{ padding: 0, overflow: "hidden", background: "#000" }}>
             {isVideoModalOpen && (
               <div className="video-iframe-container">
-                <iframe
-                  src={videoSrc}
-                  width="100%"
-                  height="100%"
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  allowFullScreen
-                  title={videoTitle}
-                  style={{ border: "none" }}
-                  loading="lazy"
-                ></iframe>
+                {isVideoSrc(videoSrc) ? (
+                  <video src={videoSrc} controls autoPlay playsInline title={videoTitle} />
+                ) : (
+                  <iframe
+                    src={videoSrc}
+                    width="100%"
+                    height="100%"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                    title={videoTitle}
+                    style={{ border: "none" }}
+                    loading="lazy"
+                  ></iframe>
+                )}
               </div>
             )}
           </div>
