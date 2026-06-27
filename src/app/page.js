@@ -91,7 +91,7 @@ export default function Home() {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   // Source for the shared video lightbox. Defaults to the setup walkthrough;
   // the Square Plans page swaps in Square's own videos via openVideo().
-  const WALKTHROUGH_VIDEO = "https://drive.google.com/file/d/1kegDTr4diB9uHWjkR38ZPG3M4ZswIQx8/preview";
+  const WALKTHROUGH_VIDEO = "https://drive.google.com/file/d/1Zz4q1S-xg2xt6KPykEYneByleXPB4GgE/preview";
   const [videoSrc, setVideoSrc] = useState(WALKTHROUGH_VIDEO);
   const [videoTitle, setVideoTitle] = useState("Walkthrough & Setup Video");
   const [activeProductDetail, setActiveProductDetail] = useState(null);
