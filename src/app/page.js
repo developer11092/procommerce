@@ -287,83 +287,140 @@ export default function Home() {
   const progressX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
 
   // --- GSAP SCROLL ENGINE (reveals, parallax, count-ups, marquee, float) ---
+  // IMPORTANT: `html.gsap-ready .animate-on-scroll { opacity: 0 }` hides content
+  // optimistically; the ONLY way it becomes visible is a reveal tween firing.
+  // So this effect is written fail-open: any init error, or any element a scroll
+  // trigger can't reach (short page, tall/zoomed-out viewport, off-screen on a
+  // non-scrollable page), is force-revealed so content is NEVER trapped invisible.
   useEffect(() => {
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const root = document.documentElement;
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (reduce) {
+    // Fail-open: drop the hiding class and clear inline transforms so everything shows.
+    const revealAllStatic = () => {
       root.classList.remove("gsap-ready");
-      document.querySelectorAll(".animate-on-scroll").forEach(el => { el.style.opacity = "1"; });
-      document.querySelectorAll("[data-count]").forEach(el => {
+      document.querySelectorAll(".animate-on-scroll").forEach((el) => {
+        el.style.opacity = "1";
+        el.style.transform = "none";
+      });
+    };
+
+    const fillCounts = (scope) => {
+      scope.querySelectorAll("[data-count]").forEach((el) => {
         el.textContent = (el.dataset.prefix || "") + Number(el.dataset.count).toLocaleString("en-US") + (el.dataset.suffix || "");
       });
+    };
+
+    if (reduce) {
+      revealAllStatic();
+      fillCounts(document);
       return;
     }
 
-    root.classList.add("gsap-ready");
-    const ctx = gsap.context(() => {
-      // Directional scroll reveals
-      gsap.utils.toArray(".animate-on-scroll").forEach((el) => {
-        const dir = el.getAttribute("data-dir");
-        const delay = (parseInt(el.getAttribute("data-delay") || "0", 10)) * 0.09;
-        const x = dir === "left" ? -64 : dir === "right" ? 64 : 0;
-        const y = (dir === "left" || dir === "right") ? 0 : 46;
-        gsap.set(el, { opacity: 0, x, y });
-        gsap.to(el, {
-          opacity: 1, x: 0, y: 0, duration: 1, ease: "power3.out", delay,
-          scrollTrigger: { trigger: el, start: "top 86%", once: true }
+    // Only the visible page can be measured; display:none pages give bogus geometry,
+    // which makes once-triggers misfire. Scope everything to the active page.
+    const page = document.querySelector(".spa-page.active") || document;
+
+    let ctx;
+    let safetyTimer;
+    // Reveal anything that is actually within the viewport but still hidden — the
+    // exact "stuck" case the scroll trigger can't cover. Off-screen elements are
+    // left alone so they still animate on scroll.
+    const ensureInViewVisible = () => {
+      if (!root.classList.contains("gsap-ready")) return;
+      page.querySelectorAll(".animate-on-scroll").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const inView = r.top < window.innerHeight && r.bottom > 0;
+        if (inView && getComputedStyle(el).opacity === "0") {
+          gsap.to(el, { opacity: 1, x: 0, y: 0, duration: 0.5, ease: "power2.out", overwrite: "auto" });
+        }
+      });
+    };
+
+    try {
+      root.classList.add("gsap-ready");
+      ctx = gsap.context(() => {
+        // Directional scroll reveals
+        gsap.utils.toArray(page.querySelectorAll(".animate-on-scroll")).forEach((el) => {
+          const dir = el.getAttribute("data-dir");
+          const delay = (parseInt(el.getAttribute("data-delay") || "0", 10)) * 0.09;
+          const x = dir === "left" ? -64 : dir === "right" ? 64 : 0;
+          const y = (dir === "left" || dir === "right") ? 0 : 46;
+          gsap.set(el, { opacity: 0, x, y });
+          gsap.to(el, {
+            opacity: 1, x: 0, y: 0, duration: 1, ease: "power3.out", delay,
+            scrollTrigger: { trigger: el, start: "top 90%", once: true }
+          });
         });
-      });
 
-      // Count-up numbers
-      gsap.utils.toArray("[data-count]").forEach((el) => {
-        const target = Number(el.dataset.count) || 0;
-        const prefix = el.dataset.prefix || "";
-        const suffix = el.dataset.suffix || "";
-        const obj = { v: 0 };
-        gsap.to(obj, {
-          v: target, duration: 1.6, ease: "power2.out",
-          scrollTrigger: { trigger: el, start: "top 90%", once: true },
-          onUpdate: () => { el.textContent = prefix + Math.round(obj.v).toLocaleString("en-US") + suffix; }
+        // Count-up numbers
+        gsap.utils.toArray(page.querySelectorAll("[data-count]")).forEach((el) => {
+          const target = Number(el.dataset.count) || 0;
+          const prefix = el.dataset.prefix || "";
+          const suffix = el.dataset.suffix || "";
+          const obj = { v: 0 };
+          gsap.to(obj, {
+            v: target, duration: 1.6, ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top 90%", once: true },
+            onUpdate: () => { el.textContent = prefix + Math.round(obj.v).toLocaleString("en-US") + suffix; }
+          });
         });
-      });
 
-      // Parallax drift (scrub) — skip floating cards and orbs (they self-animate)
-      gsap.utils.toArray("[data-parallax]").forEach((el) => {
-        if (el.classList.contains("float-card") || el.classList.contains("hero-orb")) return;
-        const speed = parseFloat(el.getAttribute("data-parallax")) || 0;
-        gsap.fromTo(el, { y: 0 }, {
-          y: speed * -150, ease: "none",
-          scrollTrigger: { trigger: el.closest("section") || el, start: "top bottom", end: "bottom top", scrub: 0.6 }
+        // Parallax drift (scrub) — skip floating cards and orbs (they self-animate)
+        gsap.utils.toArray(page.querySelectorAll("[data-parallax]")).forEach((el) => {
+          if (el.classList.contains("float-card") || el.classList.contains("hero-orb")) return;
+          const speed = parseFloat(el.getAttribute("data-parallax")) || 0;
+          gsap.fromTo(el, { y: 0 }, {
+            y: speed * -150, ease: "none",
+            scrollTrigger: { trigger: el.closest("section") || el, start: "top bottom", end: "bottom top", scrub: 0.6 }
+          });
         });
-      });
 
-      // Gentle continuous float on hero cards
-      gsap.utils.toArray(".float-card").forEach((el, i) => {
-        gsap.to(el, { y: i % 2 ? 16 : -16, duration: 3 + i * 0.4, ease: "sine.inOut", repeat: -1, yoyo: true });
-      });
+        // Gentle continuous float on hero cards
+        gsap.utils.toArray(page.querySelectorAll(".float-card")).forEach((el, i) => {
+          gsap.to(el, { y: i % 2 ? 16 : -16, duration: 3 + i * 0.4, ease: "sine.inOut", repeat: -1, yoyo: true });
+        });
 
-      // Animated bars in the hero analytics card
-      gsap.utils.toArray(".fc-bars span").forEach((el, i) => {
-        gsap.from(el, { scaleY: 0.15, transformOrigin: "bottom", duration: 0.9, delay: 0.4 + i * 0.08, ease: "power3.out" });
-      });
+        // Animated bars in the hero analytics card
+        gsap.utils.toArray(page.querySelectorAll(".fc-bars span")).forEach((el, i) => {
+          gsap.from(el, { scaleY: 0.15, transformOrigin: "bottom", duration: 0.9, delay: 0.4 + i * 0.08, ease: "power3.out" });
+        });
 
-      // Cinematic clip-path reveal on the hero photo
-      const heroImg = document.querySelector(".hero-photo img");
-      if (heroImg) {
-        gsap.fromTo(heroImg,
-          { clipPath: "inset(0 0 100% 0)", scale: 1.12 },
-          { clipPath: "inset(0 0 0% 0)", scale: 1, duration: 1.3, ease: "power3.out", delay: 0.15 });
-      }
+        // Cinematic clip-path reveal on the hero photo
+        const heroImg = page.querySelector(".hero-photo img");
+        if (heroImg) {
+          gsap.fromTo(heroImg,
+            { clipPath: "inset(0 0 100% 0)", scale: 1.12 },
+            { clipPath: "inset(0 0 0% 0)", scale: 1, duration: 1.3, ease: "power3.out", delay: 0.15 });
+        }
 
-      // Seamless marquee
-      const track = document.querySelector(".marquee-track");
-      if (track) gsap.to(track, { xPercent: -50, duration: 28, ease: "none", repeat: -1 });
+        // Seamless marquee
+        const track = page.querySelector(".marquee-track");
+        if (track) gsap.to(track, { xPercent: -50, duration: 28, ease: "none", repeat: -1 });
 
-      ScrollTrigger.refresh();
-    });
+        ScrollTrigger.refresh();
+        ensureInViewVisible();
+      }, page);
 
-    return () => ctx.revert();
+      // Layout can shift after fonts/images load or on resize — re-check that
+      // nothing on screen is left hidden. This is the safety net, not the primary path.
+      safetyTimer = window.setTimeout(ensureInViewVisible, 1500);
+      window.addEventListener("load", ensureInViewVisible);
+      window.addEventListener("resize", ensureInViewVisible);
+    } catch (err) {
+      // If GSAP/ScrollTrigger ever fails to initialize, never trap content behind
+      // the opacity:0 rule — show it unanimated instead of a blank page.
+      console.error("[reveal] animation init failed; showing content unanimated:", err);
+      revealAllStatic();
+      fillCounts(document);
+    }
+
+    return () => {
+      if (safetyTimer) clearTimeout(safetyTimer);
+      window.removeEventListener("load", ensureInViewVisible);
+      window.removeEventListener("resize", ensureInViewVisible);
+      if (ctx) ctx.revert();
+    };
   }, [currentPage]);
 
   // --- CHAT SCROLL TO BOTTOM EFFECT ---
@@ -703,6 +760,92 @@ export default function Home() {
   // Rotating gallery shown in the spec modal. Swap these for official Square
   // product photo URLs any time — the modal cross-fades through whatever is here.
   const productGallery = ["/hero_pos_scene.jpg", "/restaurant_path.jpg", "/retail_path.jpg", "/cafe_path.jpg"];
+
+  // Real Square product photos/videos committed under /public/Square product images.
+  // These replace the placeholder galleries on each hardware spec modal. Paths are
+  // URL-encoded because the folder names contain spaces.
+  const productMedia = {
+    register: [
+      "/Square%20product%20images/Sqaure-Register-Images/Sqaure-Register-Images-1.avif",
+      "/Square%20product%20images/Sqaure-Register-Images/Sqaure-Register-Images-2.avif",
+      "/Square%20product%20images/Sqaure-Register-Images/Sqaure-Register-Images-3.avif",
+      "/Square%20product%20images/Sqaure-Register-Images/Sqaure-Register-Images-4.avif",
+      "/Square%20product%20images/Sqaure-Register-Images/Sqaure-Register-Images-5.avif"
+    ],
+    handheld: [
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-1.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-2.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-3.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-4.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-5.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-6.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-7.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-8.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-9.avif",
+      "/Square%20product%20images/Sqaure-Handheld-Images/Sqaure-Handheld-Images-10.avif"
+    ],
+    terminal: [
+      "/Square%20product%20images/Square-Terminal-Images/Square-Terminal-Images-1.png",
+      "/Square%20product%20images/Square-Terminal-Images/Square-Terminal-Images-2.png",
+      "/Square%20product%20images/Square-Terminal-Images/Square-Terminal-Images-3.png",
+      "/Square%20product%20images/Square-Terminal-Images/Square-Terminal-Images-4.png",
+      "/Square%20product%20images/Square-Terminal-Images/Square-Terminal-Images-5.avif",
+      "/Square%20product%20images/Square-Terminal-Images/Square-Terminal-Images-6.png",
+      "/Square%20product%20images/Square-Terminal-Images/Square-Terminal-Images-7.jpg",
+      "/Square%20product%20images/Square-Terminal-Images/Square-Terminal-Images-8.avif"
+    ],
+    stand: [
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-1.jpg",
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-2.png",
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-3.png",
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-4.avif",
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-5.avif",
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-6.jpg",
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-7.jpg",
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-8.jpg",
+      "/Square%20product%20images/Sqaure-Stand-Images/Sqaure-Stand-Images-9.jpg"
+    ],
+    kiosk: [
+      "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-1.jpg",
+      "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-2.png",
+      "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-3.png",
+      "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-4.png",
+      "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-5.png",
+      "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-6.png",
+      "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-7.png",
+      "/Square%20product%20images/Square-Kiosk-Images/Square-Kiosk-Images-8.png"
+    ],
+    standMount: [
+      "/Square%20product%20images/Square-Stand-mount-Images/Square-Stand-mount-Images-1.avif",
+      "/Square%20product%20images/Square-Stand-mount-Images/Square-Stand-mount-Images-2.mp4"
+    ],
+    dock: [
+      "/Square%20product%20images/Square-Dock-for-Square-Handheld-images/Square-Dock-for-Square-Handheld-images-1.avif",
+      "/Square%20product%20images/Square-Dock-for-Square-Handheld-images/Square-Dock-for-Square-Handheld-images-2.avif",
+      "/Square%20product%20images/Square-Dock-for-Square-Handheld-images/Square-Dock-for-Square-Handheld-images-3.avif",
+      "/Square%20product%20images/Square-Dock-for-Square-Handheld-images/Square-Dock-for-Square-Handheld-images-4.avif"
+    ],
+    magReader: [
+      "/Square%20product%20images/Square-Reader-for-Magstripe-Images/Square-Reader-for-Magstripe-Images-1.avif",
+      "/Square%20product%20images/Square-Reader-for-Magstripe-Images/Square-Reader-for-Magstripe-Images-2.avif",
+      "/Square%20product%20images/Square-Reader-for-Magstripe-Images/Square-Reader-for-Magstripe-Images-3.avif",
+      "/Square%20product%20images/Square-Reader-for-Magstripe-Images/Square-Reader-for-Magstripe-Images-4.avif",
+      "/Square%20product%20images/Square-Reader-for-Magstripe-Images/Square-Reader-for-Magstripe-Images-5.avif"
+    ],
+    accessories: [
+      "/Square%20product%20images/Square-Accessories-Kit-Images/Square-Accessories-Kit-Images-1.webp",
+      "/Square%20product%20images/Square-Accessories-Kit-Images/Square-Accessories-Kit-Images-2.webp",
+      "/Square%20product%20images/Square-Accessories-Kit-Images/Square-Accessories-Kit-Images-3.webp"
+    ]
+  };
+  // Apply the real media over each product's placeholder gallery. The contactless
+  // "reader" has no dedicated folder, so it falls back to the generic local set.
+  Object.keys(productMedia).forEach((k) => {
+    if (hardwareDetails[k]) hardwareDetails[k].images = productMedia[k];
+  });
+  if (hardwareDetails.reader) hardwareDetails.reader.images = productGallery;
+
+  const isVideoSrc = (s) => /\.(mp4|webm|mov)$/i.test(s || "");
 
   // Free stock imagery (Unsplash). If a remote image fails to load it falls
   // back to a bundled local photo, so nothing ever appears broken.
@@ -2610,22 +2753,54 @@ export default function Home() {
             {activeProductDetail && (
               <div className="product-detail-wrap">
                 <div className="product-detail-visual">
-                  <div className="product-gallery">
-                    {(activeProductDetail.images || productGallery).map((src, gi) => (
-                      <img key={gi} src={src} alt={activeProductDetail.name + " shown in a real Square setup"} className={productSlide === gi ? "active" : ""} />
-                    ))}
-                    <button type="button" className="gallery-nav prev" aria-label="Previous image" onClick={() => setProductSlide(s => (s - 1 + (activeProductDetail.images || productGallery).length) % (activeProductDetail.images || productGallery).length)}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    </button>
-                    <button type="button" className="gallery-nav next" aria-label="Next image" onClick={() => setProductSlide(s => (s + 1) % (activeProductDetail.images || productGallery).length)}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    </button>
-                    <div className="product-gallery-dots">
-                      {(activeProductDetail.images || productGallery).map((_, gi) => (
-                        <button key={gi} type="button" aria-label={"Image " + (gi + 1)} className={productSlide === gi ? "active" : ""} onClick={() => setProductSlide(gi)}></button>
-                      ))}
-                    </div>
-                  </div>
+                  {(() => {
+                    const media = activeProductDetail.images || productGallery;
+                    const len = media.length;
+                    const idx = ((productSlide % len) + len) % len;
+                    const src = media[idx];
+                    const single = len <= 1;
+                    return (
+                      <div className="product-gallery">
+                        {/* Only the active item is mounted — the real product files are
+                            large (some 5–6 MB), so we never load the whole set at once. */}
+                        {isVideoSrc(src) ? (
+                          <video
+                            key={src}
+                            className="active"
+                            src={src}
+                            controls
+                            playsInline
+                            preload="metadata"
+                          />
+                        ) : (
+                          <img
+                            key={src}
+                            className="active"
+                            src={src}
+                            alt={`${activeProductDetail.name} — image ${idx + 1} of ${len}`}
+                            onError={onImgError("/hero_pos_scene.jpg")}
+                          />
+                        )}
+
+                        {!single && (
+                          <>
+                            <button type="button" className="gallery-nav prev" aria-label="Previous item" onClick={() => setProductSlide(s => (s - 1 + len) % len)}>
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            </button>
+                            <button type="button" className="gallery-nav next" aria-label="Next item" onClick={() => setProductSlide(s => (s + 1) % len)}>
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            </button>
+                            <div className="product-gallery-dots">
+                              {media.map((m, gi) => (
+                                <button key={gi} type="button" aria-label={(isVideoSrc(m) ? "Video " : "Image ") + (gi + 1)} className={idx === gi ? "active" : ""} onClick={() => setProductSlide(gi)}></button>
+                              ))}
+                            </div>
+                            <span className="gallery-counter">{idx + 1} / {len}</span>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
                   <div className="product-detail-pricing" style={{ marginTop: "1.5rem", textAlign: "center" }}>
                     <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>Official Price:</span>
                     <strong style={{ fontSize: "1.35rem", color: "var(--charcoal-dark)" }}>{activeProductDetail.price}</strong>
