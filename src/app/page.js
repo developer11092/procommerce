@@ -470,27 +470,45 @@ export default function Home() {
 
   let hardwareMonthly = 0;
   let onetimeTotal = 0;
+
+  // Customer-facing blurbs so "What this setup includes" reads like the prototype —
+  // each line explains what the item is, then how its cost is estimated.
+  const hardwareBlurbs = {
+    register: "Complete countertop POS system for a busy front counter, restaurant cashier station, or retail checkout.",
+    handheld: "Mobile POS device for tableside ordering, line busting, patios, and staff moving around the floor.",
+    terminal: "Compact all-in-one device for accepting card payments and printing receipts at a counter or tableside.",
+    stand: "iPad-based POS stand for a clean, professional countertop checkout.",
+    kioskHardware: "Self-service ordering hardware for quick-service restaurants and cafés that want shorter lines.",
+    reader: "Portable reader for tap, contactless, and chip payments — great for lightweight or mobile checkout.",
+    standMount: "Low-profile mount that locks an iPad in place for a tidy, fixed checkout station.",
+    dock: "Charging dock that turns the Square Handheld into a stationary countertop terminal.",
+    magReader: "Affordable swipe reader for quick magstripe card payments and as a mobile backup.",
+    accessories: "Receipt printers, cash drawers, scanners, and kitchen printers to complete the station."
+  };
+
   // Detailed "what this setup includes" lines (prototype-style breakdown)
   const setupIncludes = [];
 
-  // Software line
+  // Software line — include the plan description
+  const loc = `${locations} location${locations > 1 ? "s" : ""}`;
   if (pricingMatrix.plans[selectedPlan] > 0) {
-    setupIncludes.push(`${pricingMatrix.plansLabels[selectedPlan]} software — $${pricingMatrix.plans[selectedPlan]}/mo × ${locations} location${locations > 1 ? "s" : ""} = $${planMonthly}/mo`);
+    setupIncludes.push(`${pricingMatrix.plansLabels[selectedPlan]} for ${loc} — ${planInfo[selectedPlan].desc} Software estimate: $${pricingMatrix.plans[selectedPlan]}/mo × ${locations} = $${planMonthly}/mo.`);
   } else {
-    setupIncludes.push(`${pricingMatrix.plansLabels[selectedPlan]} software — $0/mo (processing fees apply) × ${locations} location${locations > 1 ? "s" : ""}`);
+    setupIncludes.push(`${pricingMatrix.plansLabels[selectedPlan]} for ${loc} — ${planInfo[selectedPlan].desc} Software estimate: $0/mo (processing fees still apply).`);
   }
 
   Object.keys(hardwareQty).forEach(key => {
     const qty = hardwareQty[key];
     if (qty <= 0) return;
     const config = pricingMatrix.hardware[key];
+    const blurb = hardwareBlurbs[key] || "";
     const cost = config.price * qty;
     if (config.onetime) {
       onetimeTotal += cost;
-      setupIncludes.push(`${qty} × ${config.name} — $${cost} one-time payment`);
+      setupIncludes.push(`${qty} × ${config.name} — ${blurb} One-time estimate: $${cost} (not financed).`);
     } else {
       hardwareMonthly += cost;
-      setupIncludes.push(`${qty} × ${config.name} — $${cost}/mo financed over ${config.term} (est.)`);
+      setupIncludes.push(`${qty} × ${config.name} — ${blurb} Monthly hardware financing estimate: $${cost}/mo over ${config.term}.`);
     }
   });
 
@@ -499,8 +517,8 @@ export default function Home() {
   const kdsMonthly = selectedPlan === "free" ? 0 : pricingMatrix.addons.kds[selectedPlan] * kdsQty;
   const kioskMonthly = selectedPlan === "free" ? 0 : pricingMatrix.addons.kiosk[selectedPlan] * kioskQty;
 
-  if (kdsQty > 0) setupIncludes.push(`${kdsQty} × Square KDS app device — $${pricingMatrix.addons.kds[selectedPlan]}/mo each = $${kdsMonthly}/mo`);
-  if (kioskQty > 0) setupIncludes.push(`${kioskQty} × Square Kiosk app device — $${pricingMatrix.addons.kiosk[selectedPlan]}/mo each = $${kioskMonthly}/mo`);
+  if (kdsQty > 0) setupIncludes.push(`${kdsQty} × Square KDS app device — Kitchen Display System that sends orders to the kitchen digitally and speeds up restaurant workflow. Monthly estimate: $${pricingMatrix.addons.kds[selectedPlan]}/device on ${pricingMatrix.plansLabels[selectedPlan]} = $${kdsMonthly}/mo.`);
+  if (kioskQty > 0) setupIncludes.push(`${kioskQty} × Square Kiosk app device — Self-service ordering software that lets customers place their own orders. Monthly estimate: $${pricingMatrix.addons.kiosk[selectedPlan]}/device on ${pricingMatrix.plansLabels[selectedPlan]} = $${kioskMonthly}/mo.`);
 
   const totalMonthly = planMonthly + hardwareMonthly + kdsMonthly + kioskMonthly;
 
