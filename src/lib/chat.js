@@ -10,7 +10,15 @@
 //   POST { system: string, messages: [{ role: "user"|"assistant", content }] }
 //   ->   { reply: string }   (must send CORS headers)
 
-const CHAT_ENDPOINT = process.env.NEXT_PUBLIC_CHAT_ENDPOINT || "";
+const RAW_ENDPOINT = process.env.NEXT_PUBLIC_CHAT_ENDPOINT || "";
+// Only ever call a real http(s) URL. This guards against the common mistake of
+// pasting an OpenAI key here instead of the proxy URL — the key must live in the
+// proxy's server-side env (OPENAI_API_KEY), never in this NEXT_PUBLIC value.
+const CHAT_ENDPOINT = /^https?:\/\//i.test(RAW_ENDPOINT) ? RAW_ENDPOINT : "";
+
+if (!CHAT_ENDPOINT && RAW_ENDPOINT && typeof console !== "undefined") {
+  console.warn("[chat] NEXT_PUBLIC_CHAT_ENDPOINT is not an http(s) URL — ignoring it and using fallback replies. It must be the URL of your deployed chat proxy, not an API key.");
+}
 
 export function isAIChatConfigured() {
   return Boolean(CHAT_ENDPOINT);

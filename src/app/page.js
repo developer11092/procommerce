@@ -60,6 +60,25 @@ const heroStagger = {
 };
 const hoverLift = { whileHover: { y: -3 }, whileTap: { scale: 0.97 } };
 
+// Blank form states — used to initialize and to clear after a submission so a
+// reopened form never shows the previous visitor's (or your own) details.
+const EMPTY_CONTACT = {
+  firstName: "", lastName: "", email: "", phone: "", businessName: "",
+  businessType: "Restaurant (table service)", monthlyRevenue: "",
+  interestedPlan: "free", message: "", fileName: ""
+};
+const EMPTY_SURVEY = {
+  firstName: "", lastName: "", email: "", phone: "",
+  businessType: "Restaurant (table service)", industry: "", monthlyRevenue: "",
+  projectedVolume: "", dbaName: "", legalName: "", streetAddress: "",
+  city: "", state: "", zipCode: "", fileName: ""
+};
+const EMPTY_UPLOAD = {
+  businessName: "", email: "", currentProcessor: "",
+  businessType: "Restaurant (table service)", monthlyVolume: "",
+  numLocations: "1", monthlyFees: "", fileName: ""
+};
+
 export default function Home() {
   // --- STATE ---
   const [currentPage, setCurrentPage] = useState("home");
@@ -112,49 +131,13 @@ export default function Home() {
   });
 
   // Contact Form Inputs
-  const [contactForm, setContactForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    businessName: "",
-    businessType: "Restaurant (table service)",
-    monthlyRevenue: "",
-    interestedPlan: "free",
-    message: "",
-    fileName: ""
-  });
+  const [contactForm, setContactForm] = useState(EMPTY_CONTACT);
 
   // Survey Form Inputs
-  const [surveyForm, setSurveyForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    businessType: "Restaurant (table service)",
-    industry: "",
-    monthlyRevenue: "",
-    projectedVolume: "",
-    dbaName: "",
-    legalName: "",
-    streetAddress: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    fileName: ""
-  });
+  const [surveyForm, setSurveyForm] = useState(EMPTY_SURVEY);
 
   // Upload Form Inputs
-  const [uploadForm, setUploadForm] = useState({
-    businessName: "",
-    email: "",
-    currentProcessor: "",
-    businessType: "Restaurant (table service)",
-    monthlyVolume: "",
-    numLocations: "1",
-    monthlyFees: "",
-    fileName: ""
-  });
+  const [uploadForm, setUploadForm] = useState(EMPTY_UPLOAD);
 
   // The chatbot is a self-contained component (src/components/ChatWidget).
 
@@ -553,6 +536,7 @@ export default function Home() {
     setTimeout(() => {
       setLoadingAction(null);
       setContactSubmitSuccess(true);
+      setContactForm(EMPTY_CONTACT); // clear so the next open starts blank
     }, 1000);
   };
 
@@ -563,6 +547,7 @@ export default function Home() {
     setTimeout(() => {
       setLoadingAction(null);
       setSurveySubmitSuccess(true);
+      setSurveyForm(EMPTY_SURVEY);
     }, 1000);
   };
 
@@ -573,6 +558,7 @@ export default function Home() {
     setTimeout(() => {
       setLoadingAction(null);
       setUploadSubmitSuccess(true);
+      setUploadForm(EMPTY_UPLOAD);
     }, 1000);
   };
 
@@ -591,8 +577,9 @@ export default function Home() {
     }
   };
 
-  // Modal control
+  // Modal control — always reset the form so a reopened survey starts blank.
   const openSurvey = () => {
+    setSurveyForm(EMPTY_SURVEY);
     setSurveyStep(1);
     setSurveySubmitSuccess(false);
     setIsSurveyOpen(true);
@@ -602,12 +589,13 @@ export default function Home() {
     let type = "Restaurant (table service)";
     if (path === "cafe") type = "Cafés & QSR";
     if (path === "retail") type = "Retail";
-    
-    setSurveyForm(prev => ({ ...prev, businessType: type }));
+
     openSurvey();
+    setSurveyForm(prev => ({ ...prev, businessType: type }));
   };
 
   const openUploadModal = () => {
+    setUploadForm(EMPTY_UPLOAD);
     setUploadSubmitSuccess(false);
     setIsUploadOpen(true);
   };

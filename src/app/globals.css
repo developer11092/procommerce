@@ -1656,12 +1656,24 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 13px;
-  padding: 1.1rem;
+  padding: 1.1rem 0.7rem 1.1rem 1.1rem;
   margin-top: 1.25rem;
-  max-height: 300px;
+  max-height: 340px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   font-size: 0.8rem;
+  /* Thin, on-theme scrollbar instead of the chunky default */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(159, 194, 224, 0.45) transparent;
 }
+
+.summary-details::-webkit-scrollbar { width: 6px; }
+.summary-details::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
+.summary-details::-webkit-scrollbar-thumb {
+  background: rgba(159, 194, 224, 0.35);
+  border-radius: 999px;
+}
+.summary-details::-webkit-scrollbar-thumb:hover { background: rgba(159, 194, 224, 0.6); }
 
 .summary-details h5 {
   font-family: 'Inter', sans-serif;

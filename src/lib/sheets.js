@@ -42,6 +42,7 @@ export async function submitLead(type, data = {}) {
   }
 
   try {
+    if (typeof console !== "undefined") console.info(`[lead] sending "${type}" to sheet endpoint…`);
     await fetch(ENDPOINT, {
       method: "POST",
       mode: "no-cors",
