@@ -58,25 +58,32 @@ export default function ChatWidget({ onOpenUpload }) {
 
   const stepsFor = (key, ph) => (ph === "capture" ? LEAD_CAPTURE_STEPS : (FLOWS[key]?.steps || []));
 
-  // Build the final payload and send it to the Google Sheet (spec §4, §5 Tab 1).
-  const finalizeLead = useCallback((extra = {}) => {
-    const lead = { ...leadRef.current, ...extra };
+  // Single payload builder for every capture path (submit, close, tab-unload)
+  // so the three call sites can never drift apart (spec §4, §5 Tab 1).
+  const buildChatPayload = useCallback((partial) => {
+    const lead = leadRef.current;
     const transcript = formatTranscript(messagesRef.current);
     const score = scoreLead(lead);
-    const payload = {
+    return {
       ...lead,
+      email: lead.email || (transcript.match(EMAIL_RE) || [])[0] || "",
       leadSource: "Chatbot",
       leadStatus: "New Lead",
       priority: score,
       leadScore: score,
-      chatSummary: summarizeLead(lead),
+      chatSummary: summarizeLead(lead) || (partial ? "Abandoned chat (partial)" : ""),
       transcript
     };
-    submitLead("chat", payload);
+  }, []);
+
+  // Build the final payload and send it to the Google Sheet (spec §4, §5 Tab 1).
+  const finalizeLead = useCallback((extra = {}) => {
+    leadRef.current = { ...leadRef.current, ...extra };
+    submitLead("chat", buildChatPayload(false));
     submittedRef.current = true;
     loggedLenRef.current = messagesRef.current.length;
-    return lead;
-  }, []);
+    return leadRef.current;
+  }, [buildChatPayload]);
 
   // Walk the step list from `from`, emitting statements and stopping at the
   // first question that needs an answer. Handles when/set/action semantics.
@@ -135,7 +142,12 @@ export default function ChatWidget({ onOpenUpload }) {
   function startFlow(key) {
     const flow = FLOWS[key];
     if (!flow) return;
+    // Transition atomically so stale buttons (menu, previous flow's options,
+    // next-actions) disappear immediately and can't be double-clicked while
+    // the intro message is being paced out.
     setFlowKey(key);
+    setCurrentStep(null);
+    setPhase("flow");
     say(flow.intro);
     if (flow.humanRequested) leadRef.current = { ...leadRef.current, humanRequested: "Yes" };
     // "statement"-style flows may have no questions at all.
@@ -162,6 +174,10 @@ export default function ChatWidget({ onOpenUpload }) {
 
   const handleMenuPick = (key, label) => {
     sayUser(label);
+    // Hide the menu at once — a second tap during the 300ms pacing delay
+    // would otherwise start two interleaved flows.
+    setPhase("flow");
+    setCurrentStep(null);
     setTimeout(() => startFlow(key), 300);
   };
 
@@ -174,6 +190,11 @@ export default function ChatWidget({ onOpenUpload }) {
       return;
     }
     sayUser(label);
+    // Same atomic transition: clear the current step so the outgoing flow's
+    // buttons can't be clicked while the new flow's intro is pacing out
+    // (this is the path the in-flow "Speak with a human" button uses).
+    setPhase("flow");
+    setCurrentStep(null);
     setTimeout(() => startFlow(key), 300);
   };
 
@@ -226,45 +247,30 @@ export default function ChatWidget({ onOpenUpload }) {
     handleTyped(text);
   };
 
+  // True when there is unsaved conversation worth persisting.
+  const hasUnsavedChat = useCallback(() => {
+    const msgs = messagesRef.current;
+    return msgs.some((m) => m.sender === "user") &&
+      !submittedRef.current &&
+      msgs.length !== loggedLenRef.current;
+  }, []);
+
   // Persist the conversation if the visitor leaves mid-chat (spec §4 transcript).
   const logConversation = useCallback(() => {
-    const msgs = messagesRef.current;
-    const hasUser = msgs.some((m) => m.sender === "user");
-    if (!hasUser || submittedRef.current || msgs.length === loggedLenRef.current) return;
-    const lead = leadRef.current;
-    const transcript = formatTranscript(msgs);
-    const emailMatch = lead.email || (transcript.match(EMAIL_RE) || [])[0] || "";
-    submitLead("chat", {
-      ...lead,
-      email: emailMatch,
-      leadSource: "Chatbot",
-      leadStatus: "New Lead",
-      priority: scoreLead(lead),
-      leadScore: scoreLead(lead),
-      chatSummary: summarizeLead(lead) || "Abandoned chat (partial)",
-      transcript
-    });
-    loggedLenRef.current = msgs.length;
-  }, []);
+    if (!hasUnsavedChat()) return;
+    submitLead("chat", buildChatPayload(true));
+    loggedLenRef.current = messagesRef.current.length;
+  }, [hasUnsavedChat, buildChatPayload]);
 
   useEffect(() => {
     const onUnload = () => {
-      const msgs = messagesRef.current;
-      const hasUser = msgs.some((m) => m.sender === "user");
-      if (!hasUser || submittedRef.current || msgs.length === loggedLenRef.current) return;
-      const lead = leadRef.current;
-      beaconLead("chat", {
-        ...lead,
-        leadSource: "Chatbot",
-        priority: scoreLead(lead),
-        chatSummary: summarizeLead(lead) || "Abandoned chat (partial)",
-        transcript: formatTranscript(msgs)
-      });
-      loggedLenRef.current = msgs.length;
+      if (!hasUnsavedChat()) return;
+      beaconLead("chat", buildChatPayload(true));
+      loggedLenRef.current = messagesRef.current.length;
     };
     window.addEventListener("beforeunload", onUnload);
     return () => window.removeEventListener("beforeunload", onUnload);
-  }, []);
+  }, [hasUnsavedChat, buildChatPayload]);
 
   const closeChat = () => { logConversation(); setIsOpen(false); };
   const toggleOpen = () => setIsOpen((open) => { if (open) logConversation(); return !open; });

@@ -573,6 +573,10 @@ export default function Home() {
 
   const handleUploadSubmit = (e) => {
     e.preventDefault();
+    if (uploadForm.fileReading) {
+      alert("Your statement file is still being prepared — please try again in a second.");
+      return;
+    }
     setLoadingAction("upload");
     submitLead("statement", uploadForm);
     setTimeout(() => {
@@ -596,16 +600,19 @@ export default function Home() {
       setSurveyForm(prev => ({ ...prev, fileName: label }));
     } else if (formType === "upload") {
       if (file.size <= MAX_UPLOAD_BYTES) {
+        // Mark as reading so a fast submit can't race the FileReader and
+        // silently send the form without the file attached.
+        setUploadForm(prev => ({ ...prev, fileName: `${label} — preparing…`, fileReading: true, fileData: "", fileMime: "" }));
         const reader = new FileReader();
         reader.onload = () => {
           const base64 = String(reader.result).split(",")[1] || "";
-          setUploadForm(prev => ({ ...prev, fileName: file.name, fileData: base64, fileMime: file.type }));
+          setUploadForm(prev => ({ ...prev, fileName: file.name, fileReading: false, fileData: base64, fileMime: file.type }));
         };
-        reader.onerror = () => setUploadForm(prev => ({ ...prev, fileName: label, fileData: "", fileMime: "" }));
+        reader.onerror = () => setUploadForm(prev => ({ ...prev, fileName: label, fileReading: false, fileData: "", fileMime: "" }));
         reader.readAsDataURL(file);
       } else {
         // Too large to send through the sheet endpoint — record the name only.
-        setUploadForm(prev => ({ ...prev, fileName: `${label} — too large to attach`, fileData: "", fileMime: "" }));
+        setUploadForm(prev => ({ ...prev, fileName: `${label} — too large to attach`, fileReading: false, fileData: "", fileMime: "" }));
       }
     }
   };

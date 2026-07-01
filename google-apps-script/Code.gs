@@ -68,7 +68,9 @@ var TABS = {
         d.email || '', d.phone || '', d.currentProcessor || '', d.monthlyVolume || d.cardVolume || '',
         d.numLocations || '', d.fileName || '', d.driveLink || '',
         d.driveLink ? 'Received' : (d.fileName ? 'Name only (no file)' : 'None'),
-        'Pending review', d.notes || d.monthlyFees ? ('Monthly fees: ' + (d.monthlyFees || '')) : '', 'Statement Received'
+        'Pending review',
+        joinNotes([d.notes, d.monthlyFees ? 'Monthly fees: ' + d.monthlyFees : '']),
+        'Statement Received'
       ];
     }
   },
@@ -180,11 +182,13 @@ function saveToDrive(fileName, base64, mime) {
   return file.getUrl(); // private link — visible only to the account owner/shared users
 }
 
-// Email Dominique for high-priority leads (spec §10 step 9).
+// Email Dominique for high-priority leads (spec §10 step 9). Per the lead
+// scoring rules (§6), statement uploads AND final-quote requests are High.
 function maybeNotify(d, id) {
   try {
     var high = d.priority === 'High' || d.leadScore === 'High' ||
-               d.humanRequested === 'Yes' || d.type === 'statement';
+               d.humanRequested === 'Yes' || d.type === 'statement' ||
+               d.type === 'quote';
     if (!high || !NOTIFY_EMAIL) return;
     var subject = '[ProCommerce] High-priority lead ' + id + (d.humanRequested === 'Yes' ? ' — HUMAN REQUESTED' : '');
     var body =
@@ -254,12 +258,16 @@ function updateSummary(ss) {
     rows.push([pair[1], c]);
     total += c;
   });
-  // High-priority chatbot leads
+  // High-priority chatbot leads — resolve the column by header name so the
+  // summary can't silently break if columns are ever added or reordered.
   var chat = ss.getSheetByName('Chatbot Leads');
   if (chat && chat.getLastRow() > 1) {
-    var scores = chat.getRange(2, 28, chat.getLastRow() - 1, 1).getValues(); // 'Lead Score' col
-    var high = scores.filter(function (r) { return r[0] === 'High'; }).length;
-    rows.push(['High-priority chatbot leads', high]);
+    var scoreCol = TABS.chat.headers.indexOf('Lead Score') + 1;
+    if (scoreCol > 0) {
+      var scores = chat.getRange(2, scoreCol, chat.getLastRow() - 1, 1).getValues();
+      var high = scores.filter(function (r) { return r[0] === 'High'; }).length;
+      rows.push(['High-priority chatbot leads', high]);
+    }
   }
   rows.splice(1, 0, ['Total submissions', total]);
   rows.push(['Last updated', new Date()]);
@@ -270,6 +278,9 @@ function updateSummary(ss) {
 
 function join(arr) {
   return (arr || []).filter(function (x) { return x; }).join(' ');
+}
+function joinNotes(arr) {
+  return (arr || []).filter(function (x) { return x; }).join(' | ');
 }
 function n(v) { return v === undefined || v === null || v === '' ? 0 : Number(v) || 0; }
 function money(v) { return v === undefined || v === null || v === '' ? '' : '$' + (Number(v) || 0); }
