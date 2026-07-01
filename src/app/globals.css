@@ -2488,6 +2488,18 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   box-shadow: 0 4px 12px rgba(71, 143, 204, 0.2);
 }
 
+/* Always-available human escape hatch inside guided flows */
+.chat-quick-btn.chat-quick-human {
+  background: transparent;
+  border-style: dashed;
+  color: var(--text-muted);
+}
+.chat-quick-btn.chat-quick-human:hover {
+  background: var(--charcoal-dark);
+  border-color: var(--charcoal-dark);
+  color: #fff;
+}
+
 .chat-foot {
   padding: 1rem 1.25rem;
   border-top: 1px solid var(--border-color);

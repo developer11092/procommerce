@@ -474,9 +474,29 @@ export default function Home() {
     }
   };
 
-  // "Request Final Quote" -> prefills contact form and navigates there
+  // "Request Final Quote" -> logs the quote to the sheet (Calculator Quotes tab),
+  // prefills the contact form, and navigates there.
   const applyQuoteToContact = () => {
     const summaryText = `Hello Pro Commerce Solutions team,\n\nI used the cost calculator and would like a final quote. Here is my setup:\n- Locations: ${locations}\n- Software plan: ${pricingMatrix.plansLabels[selectedPlan]}\n- What this setup includes:\n  ${setupIncludes.join("\n  ")}\n- Estimated total monthly: $${totalMonthly}/mo\n- One-time hardware: $${onetimeTotal}\n\nPlease review and let me know the next steps.`;
+
+    submitLead("quote", {
+      locations,
+      selectedPlan: pricingMatrix.plansLabels[selectedPlan],
+      registerQty: hardwareQty.register,
+      terminalQty: hardwareQty.terminal,
+      standQty: hardwareQty.stand,
+      handheldQty: hardwareQty.handheld,
+      kioskQty: hardwareQty.kioskHardware,
+      readerQty: hardwareQty.reader,
+      kdsQty: addonQty.kds,
+      kioskAppQty: addonQty.kiosk,
+      softwareMonthly: planMonthly,
+      hardwareMonthly,
+      addonMonthly: kdsMonthly + kioskMonthly,
+      onetimeTotal,
+      totalMonthly,
+      summary: setupIncludes.join(" | ")
+    });
 
     setContactForm(prev => ({
       ...prev,
@@ -562,17 +582,30 @@ export default function Home() {
     }, 1000);
   };
 
-  // File selection change handler
+  // File selection change handler. For the statement uploader the actual file
+  // is read as base64 (up to 8 MB) so the Apps Script backend can store it
+  // privately in Google Drive and keep only the private link in the sheet.
+  const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
   const handleFileChange = (e, formType) => {
     const file = e.target.files[0];
-    if (file) {
-      const label = `${file.name} (${Math.round(file.size / 1024)} KB)`;
-      if (formType === "contact") {
-        setContactForm(prev => ({ ...prev, fileName: label }));
-      } else if (formType === "survey") {
-        setSurveyForm(prev => ({ ...prev, fileName: label }));
-      } else if (formType === "upload") {
-        setUploadForm(prev => ({ ...prev, fileName: label }));
+    if (!file) return;
+    const label = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+    if (formType === "contact") {
+      setContactForm(prev => ({ ...prev, fileName: label }));
+    } else if (formType === "survey") {
+      setSurveyForm(prev => ({ ...prev, fileName: label }));
+    } else if (formType === "upload") {
+      if (file.size <= MAX_UPLOAD_BYTES) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = String(reader.result).split(",")[1] || "";
+          setUploadForm(prev => ({ ...prev, fileName: file.name, fileData: base64, fileMime: file.type }));
+        };
+        reader.onerror = () => setUploadForm(prev => ({ ...prev, fileName: label, fileData: "", fileMime: "" }));
+        reader.readAsDataURL(file);
+      } else {
+        // Too large to send through the sheet endpoint — record the name only.
+        setUploadForm(prev => ({ ...prev, fileName: `${label} — too large to attach`, fileData: "", fileMime: "" }));
       }
     }
   };
