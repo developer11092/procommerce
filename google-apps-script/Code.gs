@@ -127,6 +127,13 @@ var TABS = {
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
+
+    // Honeypot spam protection: real visitors never fill the hidden "website"
+    // field. Accept silently (so bots learn nothing) but store nothing.
+    if (data.website) {
+      return json({ ok: true });
+    }
+
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
     ensureReferenceTabs(ss);

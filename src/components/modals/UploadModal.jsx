@@ -1,6 +1,7 @@
 "use client";
 
 import { ShieldCheck, FileText } from "lucide-react";
+import { BusinessTypeSelect, HoneypotField } from "../FormControls";
 
 export default function UploadModal({ open, onClose, success, form, setForm, onSubmit, onFileChange, loadingAction }) {
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -29,6 +30,7 @@ export default function UploadModal({ open, onClose, success, form, setForm, onS
             </div>
           ) : (
             <form onSubmit={onSubmit}>
+              <HoneypotField value={form.website} onChange={set("website")} />
               <div className="form-grid">
                 <div className="form-group">
                   <label>Business Name *</label>
@@ -44,14 +46,7 @@ export default function UploadModal({ open, onClose, success, form, setForm, onS
                 </div>
                 <div className="form-group">
                   <label>Business Type *</label>
-                  <select required value={form.businessType} onChange={set("businessType")}>
-                    <option value="Restaurant (table service)">Restaurant (table service)</option>
-                    <option value="Restaurant (quick service)">Restaurant (quick service)</option>
-                    <option value="Cafés & QSR">Cafés &amp; QSR</option>
-                    <option value="Retail">Retail</option>
-                    <option value="Services">Services</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <BusinessTypeSelect value={form.businessType} onChange={set("businessType")} required includeServices />
                 </div>
                 <div className="form-group">
                   <label>Avg. Monthly Card Volume ($) *</label>

@@ -934,12 +934,6 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
   line-height: 1.7;
 }
 
-.brand-values-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
-
 /* generic image container (about/profile) */
 .hero-image-container {
   position: relative;
@@ -1389,14 +1383,6 @@ html.gsap-ready .animate-on-scroll { opacity: 0; }
 }
 
 .calc-section-title h4 { font-size: 1.18rem; margin: 0; }
-
-.calc-form-row {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.4rem;
-  align-items: end;
-}
 
 /* New stepper + segmented controls (Section 1) */
 .calc-controls-row {
@@ -2712,7 +2698,6 @@ footer p { color: #9CA3AF; }
   .calc-control, .calc-control.grow { width: 100%; min-width: 0; }
   .seg-control { width: 100%; }
 
-  .calc-form-row { grid-template-columns: 1fr; gap: 1rem; }
   .form-grid { grid-template-columns: 1fr; }
   .service-content { max-width: 100%; }
   .footer-top { grid-template-columns: 1fr; gap: 2.5rem; }
@@ -2734,7 +2719,6 @@ footer p { color: #9CA3AF; }
   .chat-widget { bottom: 1rem; right: 1rem; }
   .btn { padding: 0.8rem 1.3rem; }
   .video-modal { width: 98% !important; }
-  .video-play-btn { width: 60px; height: 60px; }
   .summary-box { padding: 1.5rem 1.3rem; }
 }
 
@@ -2747,4 +2731,14 @@ footer p { color: #9CA3AF; }
     scroll-behavior: auto !important;
   }
   .animate-on-scroll { opacity: 1 !important; transform: none !important; }
+}
+
+/* Honeypot anti-spam field — invisible and non-interactive for humans */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }

@@ -14,9 +14,6 @@
 
 const ENDPOINT = process.env.NEXT_PUBLIC_SHEETS_ENDPOINT || "";
 
-export function isLeadCaptureConfigured() {
-  return Boolean(ENDPOINT);
-}
 
 /**
  * Send a lead/chat record to the Google Sheet.

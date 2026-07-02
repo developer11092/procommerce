@@ -1,6 +1,7 @@
 "use client";
 
 import { ShieldCheck, FileText } from "lucide-react";
+import { BusinessTypeSelect, HoneypotField } from "../FormControls";
 
 export default function SurveyModal({ open, onClose, success, step, setStep, form, setForm, onSubmit, onNext, onFileChange, loadingAction }) {
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -36,6 +37,7 @@ export default function SurveyModal({ open, onClose, success, step, setStep, for
               </div>
 
               <form onSubmit={onSubmit}>
+                <HoneypotField value={form.website} onChange={set("website")} />
                 {step === 1 && (
                   <div className="survey-step active">
                     <h4 style={{ marginBottom: "1rem" }}>Step 1: Contact Information</h4>
@@ -69,13 +71,7 @@ export default function SurveyModal({ open, onClose, success, step, setStep, for
                     <div className="form-grid">
                       <div className="form-group">
                         <label>Business Type *</label>
-                        <select value={form.businessType} onChange={set("businessType")} required>
-                          <option value="Restaurant (table service)">Restaurant (table service)</option>
-                          <option value="Restaurant (quick service)">Restaurant (quick service)</option>
-                          <option value="Cafés & QSR">Cafés &amp; QSR</option>
-                          <option value="Retail">Retail</option>
-                          <option value="Other">Other</option>
-                        </select>
+                        <BusinessTypeSelect value={form.businessType} onChange={set("businessType")} required />
                       </div>
                       <div className="form-group">
                         <label>Industry *</label>

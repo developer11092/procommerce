@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { ShieldCheck } from "lucide-react";
+import { BusinessTypeSelect, HoneypotField } from "../FormControls";
 
 export default function WelcomePopup({ open, onClose, submitted, onSubmit, form, setForm, loadingAction }) {
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -33,6 +34,7 @@ export default function WelcomePopup({ open, onClose, submitted, onSubmit, form,
                 <h3 style={{ marginBottom: "0.35rem" }}>Get a free recommendation</h3>
                 <p style={{ fontSize: "0.88rem", marginBottom: "1.25rem" }}>It takes under a minute — no obligation.</p>
                 <form onSubmit={onSubmit}>
+                  <HoneypotField value={form.website} onChange={set("website")} />
                   <div className="form-grid">
                     <div className="form-group">
                       <label>First name *</label>
@@ -52,13 +54,7 @@ export default function WelcomePopup({ open, onClose, submitted, onSubmit, form,
                     </div>
                     <div className="form-group full">
                       <label>Business type</label>
-                      <select value={form.businessType} onChange={set("businessType")}>
-                        <option value="Restaurant (table service)">Restaurant (table service)</option>
-                        <option value="Restaurant (quick service)">Restaurant (quick service)</option>
-                        <option value="Cafés & QSR">Cafés &amp; QSR</option>
-                        <option value="Retail">Retail</option>
-                        <option value="Other">Other</option>
-                      </select>
+                      <BusinessTypeSelect value={form.businessType} onChange={set("businessType")} />
                     </div>
                   </div>
                   <button type="submit" className="btn primary" style={{ width: "100%", marginTop: "1.1rem" }} disabled={loadingAction === "welcome"}>

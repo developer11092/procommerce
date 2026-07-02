@@ -20,9 +20,6 @@ if (!CHAT_ENDPOINT && RAW_ENDPOINT && typeof console !== "undefined") {
   console.warn("[chat] NEXT_PUBLIC_CHAT_ENDPOINT is not an http(s) URL — ignoring it and using fallback replies. It must be the URL of your deployed chat proxy, not an API key.");
 }
 
-export function isAIChatConfigured() {
-  return Boolean(CHAT_ENDPOINT);
-}
 
 export const CHAT_SYSTEM_PROMPT = [
   "You are the Pro Commerce Solutions assistant — a 24/7 guided AI sales assistant.",

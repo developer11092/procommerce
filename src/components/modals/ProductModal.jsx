@@ -88,7 +88,7 @@ export default function ProductModal({ open, product, slide, setSlide, onClose, 
                   <button className="btn primary" style={{ width: "100%" }} onClick={() => onAddToCalculator(product.name)}>
                     Add to Monthly Estimate
                   </button>
-                  <button className="btn secondary" style={{ width: "100%" }} onClick={() => window.open(product.url, "_blank")}>
+                  <button className="btn secondary" style={{ width: "100%" }} onClick={() => window.open(product.url, "_blank", "noopener,noreferrer")}>
                     Open Square Store Checkout <ArrowUpRight size={16} />
                   </button>
                   <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", textAlign: "center", display: "block", marginTop: "0.25rem" }}>
